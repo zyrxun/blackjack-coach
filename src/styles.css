@@ -182,7 +182,8 @@ kbd {
 .top-stats { display: flex; }
 
 /* screens */
-main { padding: 18px; max-width: 1080px; margin: 0 auto; }
+main { padding: 18px; max-width: 1400px; margin: 0 auto; }
+#screen-play { display: flex; flex-direction: column; min-height: calc(100vh - 100px); }
 .panel {
   background: var(--panel); border: 1px solid var(--panel-edge);
   border-radius: 12px; padding: 16px 20px; margin-bottom: 14px;
@@ -199,7 +200,7 @@ main { padding: 18px; max-width: 1080px; margin: 0 auto; }
 .tagline { color: var(--muted); margin-top: 0; }
 .menu-grid {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 14px; max-width: 760px; margin: 34px auto;
+  gap: 14px; max-width: 920px; margin: 34px auto;
 }
 .menu-btn {
   background: var(--menu-btn-bg);
@@ -221,6 +222,7 @@ main { padding: 18px; max-width: 1080px; margin: 0 auto; }
   display: flex; flex-direction: column; justify-content: space-between;
   transition: background 0.3s;
 }
+#screen-play .table-felt { flex: 1 0 auto; }
 .area-label {
   color: var(--felt-label); font-size: 0.85em; letter-spacing: 2px;
   text-transform: uppercase; text-align: center; margin-bottom: 8px;
@@ -229,8 +231,8 @@ main { padding: 18px; max-width: 1080px; margin: 0 auto; }
   background: rgba(0,0,0,0.4); border-radius: 10px; padding: 2px 10px;
   color: #fff; font-weight: 700; letter-spacing: 0;
 }
-.cards-row { display: flex; gap: 10px; justify-content: center; min-height: 128px; flex-wrap: wrap; }
-.cards-row.center { align-items: center; min-height: 160px; }
+.cards-row { display: flex; gap: 10px; justify-content: center; min-height: clamp(128px, 11vw, 195px); flex-wrap: wrap; }
+.cards-row.center { align-items: center; min-height: clamp(160px, 14vw, 230px); }
 .hands-row { display: flex; gap: 26px; justify-content: center; flex-wrap: wrap; }
 .player-hand { text-align: center; padding: 8px 12px; border-radius: 12px; border: 2px dashed transparent; }
 .player-hand.active { border-color: var(--gold); background: rgba(0,0,0,0.18); }
@@ -246,7 +248,7 @@ main { padding: 18px; max-width: 1080px; margin: 0 auto; }
 
 /* playing cards */
 .card {
-  width: 92px; height: 128px; border-radius: 9px; background: var(--card-bg);
+  width: clamp(92px, 7.5vw, 132px); height: clamp(128px, 10.4vw, 184px); border-radius: 9px; background: var(--card-bg);
   border: var(--card-border-w) solid var(--card-edge); position: relative; flex: 0 0 auto;
   box-shadow: 0 3px 8px rgba(0,0,0,0.25);
   perspective: 600px;
@@ -272,10 +274,10 @@ main { padding: 18px; max-width: 1080px; margin: 0 auto; }
   text-align: center;
 }
 .card .corner.br { top: auto; left: auto; right: 7px; bottom: 5px; transform: rotate(180deg); }
-.card .pip { font-size: 2.6em; }
+.card .pip { font-size: clamp(2.6em, 3.6vw, 3.7em); }
 .card.red { color: var(--card-red); }
 .card.black { color: var(--card-ink); }
-.card.small { width: 64px; height: 90px; }
+.card.small { width: clamp(64px, 5.4vw, 94px); height: clamp(90px, 7.5vw, 131px); }
 .card.small .pip { font-size: 1.8em; }
 .card.small .corner { font-size: 0.85em; }
 .card .tag-badge {
