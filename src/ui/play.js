@@ -121,6 +121,7 @@ function startRun(id) {
     run = {
       status: 'active', bankroll: p.start, start: p.start, goal: p.goal,
       rounds: 0, hands: 0, wagered: 0, net: 0,
+      history: [{ r: 0, b: p.start }],
       decisions: 0, correct: 0, evLostUsd: 0,
       streak: 0, bestStreak: 0, points: 0,
     };
@@ -540,6 +541,9 @@ function renderAll() {
       run.wagered += r.bet;
       run.net += totalNet;
       run.bankroll = table.bankroll;
+      run.history = run.history || [{ r: 0, b: run.start }];
+      run.history.push({ r: run.rounds, b: run.bankroll });
+      if (run.history.length > 500) run.history.shift();
       save(state);
       renderHud();
       if (run.bankroll >= run.goal) { setTimeout(() => endRun('won'), 900); }

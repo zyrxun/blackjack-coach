@@ -91,6 +91,24 @@ function renderStats() {
     el('td', {}, `${d.correct}/${d.checks}`),
     el('td', {}, d.bestStreak + ''),
   ));
+  const chartFor = (r) => {
+    const h = r.history || [];
+    if (h.length < 2) return '';
+    const W = 320, H = 90, P = 5;
+    const lo = Math.min(...h.map(p => p.b), r.start) * 0.95;
+    const hi = Math.max(...h.map(p => p.b), r.goal) * 1.05;
+    const x = i => P + (W - 2 * P) * (i / Math.max(h.length - 1, 1));
+    const y = b => H - P - (H - 2 * P) * ((b - lo) / Math.max(hi - lo, 1));
+    const pts = h.map((p, i) => `${x(i).toFixed(1)},${y(p.b).toFixed(1)}`).join(' ');
+    const last = h[h.length - 1];
+    const dotColor = last.b >= r.goal ? 'var(--good)' : last.b < r.start ? 'var(--bad)' : 'var(--gold)';
+    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+      <line x1="${P}" y1="${y(r.goal).toFixed(1)}" x2="${W - P}" y2="${y(r.goal).toFixed(1)}" style="stroke:var(--gold)" stroke-dasharray="4 3" stroke-width="1" opacity="0.8"/>
+      <line x1="${P}" y1="${y(r.start).toFixed(1)}" x2="${W - P}" y2="${y(r.start).toFixed(1)}" style="stroke:var(--muted)" stroke-dasharray="2 3" stroke-width="1" opacity="0.6"/>
+      <polyline points="${pts}" fill="none" style="stroke:var(--gold)" stroke-width="1.6" stroke-linejoin="round"/>
+      <circle cx="${x(h.length - 1).toFixed(1)}" cy="${y(last.b).toFixed(1)}" r="2.4" style="fill:${dotColor}"/>
+    </svg>`;
+  };
   const runRows = Object.entries(state.runs).map(([id, r]) => el('tr', {},
     el('td', {}, id),
     el('td', {}, r.status),
@@ -99,6 +117,16 @@ function renderStats() {
     el('td', {}, r.decisions ? Math.round(100 * r.correct / r.decisions) + '%' : '—'),
     el('td', {}, fmtMoney(r.evLostUsd)),
   ));
+  const runCharts = Object.entries(state.runs).map(([id, r]) => {
+    const wrap = el('div', { style: 'margin-bottom:10px' },
+      el('div', { style: 'font-size:0.82em;color:var(--muted);margin:2px 0 4px' },
+        `${id} — ${r.status} at ${fmtMoney(r.bankroll)} · ${r.rounds} rounds · goal ${fmtMoney(r.goal)}`),
+    );
+    const box = el('div', { style: 'border:1px solid var(--panel-edge);border-radius:10px;padding:8px;background:var(--panel-alt)' });
+    box.innerHTML = chartFor(r) || '<p style="color:var(--muted);font-size:0.85em;margin:4px">No history yet — play a few rounds of this run.</p>';
+    wrap.append(box);
+    return wrap;
+  });
   document.getElementById('stats-content').replaceChildren(
     el('div', { class: 'panel-title' }, 'Your progress'),
     el('div', { class: 'stats-tables' },
@@ -124,6 +152,8 @@ function renderStats() {
       ),
     ),
     ...(Object.keys(state.runs).length ? [
+      el('div', { class: 'panel-title', style: 'margin-top:18px' }, 'Bankroll over rounds'),
+      ...runCharts,
       el('div', { class: 'panel-title', style: 'margin-top:18px' }, 'Runs'),
       el('table', { class: 'stats' },
         el('tr', {}, el('th', {}, 'Profile'), el('th', {}, 'Status'), el('th', {}, 'Bankroll'), el('th', {}, 'Net'), el('th', {}, 'Accuracy'), el('th', {}, 'EV lost')),
