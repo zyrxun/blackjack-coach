@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Blackjack Coach — learn to count cards</title>
+<title>Blackjack Coach — count cards & play perfect strategy</title>
 <link rel="stylesheet" href="src/styles.css">
 </head>
 <body>
@@ -29,6 +29,7 @@
       <h1>Learn to count cards</h1>
       <p class="tagline">Hi-Lo counting, basic strategy and the Illustrious 18 — with a full casino table.</p>
       <nav class="menu-grid">
+        <button class="menu-btn" data-goto="trainer"><span class="big">🎯</span><span>Perfect Strategy</span><small>Learn the best play — no counting</small></button>
         <button class="menu-btn" data-goto="runs"><span class="big">🃏</span><span>Play</span><small>Pick a run, chase the goal</small></button>
         <button class="menu-btn" data-goto="drill"><span class="big">⚡</span><span>Count Drill</span><small>Train speed and accuracy</small></button>
         <button class="menu-btn" data-goto="lessons"><span class="big">🎓</span><span>Lessons</span><small>From first principles to deviations</small></button>
@@ -134,6 +135,55 @@
       </div>
     </div>
     <div id="drill-summary" class="panel hidden"></div>
+  </section>
+
+  <section id="screen-trainer" class="screen hidden">
+    <div id="trainer-config" class="panel config-panel">
+      <div class="panel-title">Perfect strategy trainer</div>
+      <div class="config-row">
+        <label>Focus
+          <select id="trainer-focus">
+            <option value="all" selected>All hands</option>
+            <option value="hard">Hard totals</option>
+            <option value="soft">Soft totals</option>
+            <option value="pair">Pairs</option>
+            <option value="trouble">My trouble spots</option>
+          </select>
+        </label>
+        <label>Hands
+          <select id="trainer-hands"><option>20</option><option>50</option><option>100</option></select>
+        </label>
+        <button class="btn" id="trainer-chart">Show strategy chart</button>
+        <button class="btn primary" id="trainer-start">Start training</button>
+      </div>
+      <p class="hint">Drills basic strategy for a fresh 6-deck shoe (S17, DAS, surrender allowed). No counting involved — just the mathematically best play for every hand.</p>
+    </div>
+    <div id="trainer-run" class="hidden">
+      <div class="drill-progress"><div id="trainer-progress-bar"></div></div>
+      <div class="trainer-stage">
+        <div class="area-label">Dealer shows</div>
+        <div id="trainer-dealer" class="cards-row center"></div>
+        <div class="area-label" style="margin-top:10px">Your hand <span id="trainer-hand-total" class="total-badge"></span></div>
+        <div id="trainer-player" class="cards-row center"></div>
+        <div id="trainer-verdict"></div>
+        <div id="trainer-why" class="trainer-why"></div>
+      </div>
+      <div class="control-bar">
+        <div id="trainer-actions" class="controls-group">
+          <button class="btn action" data-action="H">Hit <kbd>H</kbd></button>
+          <button class="btn action" data-action="S">Stand <kbd>S</kbd></button>
+          <button class="btn action" data-action="D">Double <kbd>D</kbd></button>
+          <button class="btn action" data-action="P">Split <kbd>P</kbd></button>
+          <button class="btn action" data-action="R">Surrender <kbd>R</kbd></button>
+        </div>
+        <div class="controls-group">
+          <button class="btn primary" id="trainer-next" style="display:none">Next hand <kbd>⏎</kbd></button>
+          <button class="btn small" id="trainer-quit">End session</button>
+        </div>
+      </div>
+      <div id="trainer-mastery" class="mastery"></div>
+    </div>
+    <div id="trainer-summary" class="panel hidden"></div>
   </section>
 
   <section id="screen-lessons" class="screen hidden">

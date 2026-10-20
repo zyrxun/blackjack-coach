@@ -12,6 +12,7 @@ export const DEFAULTS = {
     drills: [],            // {when, mode, cards, checks, correct, bestStreak}
     play: { rounds: 0, hands: 0, wagered: 0, net: 0, countGrades: [] },
     lessons: {},           // {id: true}
+    strategy: {},          // perfect-strategy trainer: {key: {seen, right}}
   },
   runs: {},                // per-profile saved runs
 };

@@ -699,3 +699,31 @@ body[data-cardart="anime"] .card.face-card .pip { opacity: 0.3; }
 }
 .round-steps { line-height: 1.7; padding-left: 20px; }
 .round-steps li { margin-bottom: 8px; }
+
+/* ---- perfect-strategy trainer ---- */
+.trainer-stage { text-align: center; margin: 6px auto 2px; }
+.trainer-stage .area-label { margin-top: 16px; }
+#trainer-verdict { min-height: 30px; margin-top: 14px; font-size: 1.15em; font-weight: 800; }
+#trainer-verdict.ok { color: var(--good); }
+#trainer-verdict.no { color: var(--bad); }
+.trainer-why { max-width: 640px; margin: 6px auto 0; color: var(--muted); font-size: 0.92em; line-height: 1.5; min-height: 20px; }
+.btn.action.right { border-color: var(--good); background: var(--quiz-ok-bg); }
+.btn.action.wrong { border-color: var(--bad); background: var(--quiz-wrong-bg); }
+.mastery { max-width: 460px; margin: 16px auto 6px; display: grid; gap: 7px; }
+.m-row { display: grid; grid-template-columns: 96px 1fr 110px; gap: 10px; align-items: center; font-size: 0.85em; color: var(--muted); }
+.m-bar { height: 8px; border-radius: 4px; background: var(--panel-alt); border: 1px solid var(--panel-edge); overflow: hidden; }
+.m-bar > div { height: 100%; background: var(--gold); }
+#trainer-chart-wrap { max-height: 78vh; overflow: auto; text-align: center; }
+.modal-box:has(#trainer-chart-wrap) { max-width: 720px; }
+#trainer-chart-wrap .strategy-chart { margin-left: auto; margin-right: auto; }
+.chart-legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 4px 0 12px; font-size: 0.85em; color: var(--muted); }
+.strategy-chart { border-collapse: collapse; margin: 4px 0 16px; }
+.strategy-chart th, .strategy-chart td { border: 1px solid var(--panel-edge); padding: 3px 6px; text-align: center; font-size: 0.85em; }
+.strategy-chart th { color: var(--muted); font-weight: 600; }
+.strategy-chart td.rowlab { color: var(--muted); text-align: left; white-space: nowrap; }
+.cc { display: inline-block; min-width: 24px; padding: 2px 0; border-radius: 5px; font-weight: 800; }
+.cc.H { background: #1f5f38; color: #c9f2d6; }
+.cc.S { background: #6d4a14; color: #ffe8c2; }
+.cc.D { background: #274a72; color: #cfe6ff; }
+.cc.P { background: #4b2a66; color: #e6d1ff; }
+.cc.R { background: #6d1f24; color: #ffd3d3; }

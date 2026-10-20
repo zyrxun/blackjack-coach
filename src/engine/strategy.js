@@ -1,7 +1,7 @@
 // strategy.js — basic strategy (6-deck base), Hi-Lo deviations (Illustrious 18), bet spread
 // Chart encodes: H hit, S stand, D double if allowed else hit, P split,
 // R surrender if allowed else hit.dealer up encoded as 2..11 (11 = ace).
-import { handValue, isPair, cardValue, TEN_VALUED } from './hand.js';
+import { handValue, isPair, isBlackjack, cardValue, TEN_VALUED, SUITS } from './hand.js';
 
 // ---- hard totals ----------------------------------------------------
 const HARD = {
@@ -156,3 +156,35 @@ export function betSpread(trueCount, unit) {
 }
 
 export const ACTION_NAMES = { H: 'Hit', S: 'Stand', D: 'Double', P: 'Split', R: 'Surrender' };
+
+// ---- perfect-strategy trainer: scenario generation ----------------------
+// weighted rank pool = composition of one fresh deck (16 ten-valued cards)
+const RANK_POOL = [];
+for (const r of ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']) {
+  const w = TEN_VALUED.has(r) ? 16 : 4;
+  for (let i = 0; i < w; i++) RANK_POOL.push(r);
+}
+
+// random decidable hand: 2 player cards + dealer up-card, never a natural
+export function randomScenario(rng = Math.random) {
+  const pick = () => ({
+    rank: RANK_POOL[Math.floor(rng() * RANK_POOL.length)],
+    suit: SUITS[Math.floor(rng() * SUITS.length)],
+  });
+  let cards;
+  do {
+    cards = [pick(), pick()];
+  } while (isBlackjack(cards)); // naturals leave no decision
+  return { cards, dealerUp: pick() };
+}
+
+// stable grouping key per basic-strategy row, e.g. hard-16-v-10, soft-18-v-6, pair-8-v-5
+export function scenarioKey(cards, dealerUp) {
+  const up = upValue(dealerUp);
+  const { total, soft } = handValue(cards);
+  if (isPair(cards)) {
+    const r = cards[0].rank;
+    return `pair-${r === 'A' ? 'A' : cardValue(r)}-v-${up}`;
+  }
+  return `${soft ? 'soft' : 'hard'}-${total}-v-${up}`;
+}

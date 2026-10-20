@@ -2,6 +2,7 @@
 import { initPlay, enterRuns } from './play.js';
 import { initDrill, drillIsActive } from './drill.js';
 import { initLessons, enterLessons } from './lessons.js';
+import { initTrainer, trainerIsActive } from './trainer.js';
 import { load, save, resetAll } from './store.js';
 import { setSoundEnabled } from './sound.js';
 import { el, fmtMoney } from './cards.js';
@@ -17,6 +18,9 @@ function applyTheme(t) {
 function show(screen) {
   if (screen !== 'drill' && drillIsActive()) {
     document.getElementById('drill-quit').click(); // leaving mid-drill: end without saving
+  }
+  if (screen !== 'trainer' && trainerIsActive()) {
+    document.getElementById('trainer-quit').click(); // leaving mid-session: stop, keep mastery
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   document.getElementById('screen-' + screen).classList.remove('hidden');
@@ -36,6 +40,7 @@ document.querySelectorAll('[data-goto]').forEach(b =>
 initPlay(state, show);
 initDrill(state, show);
 initLessons(state, show);
+initTrainer(state);
 
 // ---- settings ----
 function loadSettingsForm() {
@@ -76,6 +81,61 @@ document.getElementById('set-clear').addEventListener('click', () => {
 });
 
 // ---- stats ----
+function prettyKeyLabel(k) {
+  const [kind, total, , up] = k.split('-');
+  const upTxt = up === '11' ? 'A' : up;
+  if (kind === 'pair') return `${total === 'A' ? 'A,A' : `${total},${total}`} v ${upTxt}`;
+  return `${kind} ${total} v ${upTxt}`;
+}
+
+function strategySection(strategy) {
+  const entries = Object.entries(strategy || {}).filter(([k]) => /^(hard|soft|pair)-/.test(k));
+  if (!entries.length) return [];
+  const cat = { hard: [0, 0], soft: [0, 0], pair: [0, 0] };
+  let seen = 0, right = 0;
+  for (const [k, v] of entries) {
+    const c = k.split('-')[0];
+    cat[c][0] += v.seen;
+    cat[c][1] += v.right;
+    seen += v.seen;
+    right += v.right;
+  }
+  const pct = (r, s) => s ? Math.round(100 * r / s) + '%' : '—';
+  const cls = 100 * right / seen >= 90 ? 'good' : 100 * right / seen >= 70 ? '' : 'bad';
+  const CAT_NAMES = { hard: 'Hard totals', soft: 'Soft totals', pair: 'Pairs' };
+  const troubles = entries
+    .filter(([, v]) => v.seen >= 2 && v.right / v.seen < 0.8)
+    .sort((a, b) => a[1].right / a[1].seen - b[1].right / b[1].seen)
+    .slice(0, 3);
+  return [
+    el('div', { class: 'panel-title', style: 'margin-top:18px' }, 'Perfect strategy'),
+    el('div', { class: 'stats-tables' },
+      el('div', {},
+        el('div', { class: `big-stat ${cls}` }, pct(right, seen)),
+        el('p', { style: 'color:#9d947c;margin:4px 0 14px' }, `mastery over ${seen} trained decisions`),
+        el('table', { class: 'stats' },
+          ...Object.entries(cat).map(([c, [s2, r2]]) => el('tr', {},
+            el('td', {}, CAT_NAMES[c]),
+            el('td', {}, `${r2}/${s2} (${pct(r2, s2)})`),
+          )),
+        ),
+      ),
+      el('div', {},
+        el('div', { class: 'panel-title' }, 'Trouble spots'),
+        troubles.length
+          ? el('table', { class: 'stats' },
+              el('tr', {}, el('th', {}, 'Hand'), el('th', {}, 'Accuracy')),
+              ...troubles.map(([k, v]) => el('tr', {},
+                el('td', {}, prettyKeyLabel(k)),
+                el('td', {}, Math.round(100 * v.right / v.seen) + '%'),
+              )),
+            )
+          : el('p', { style: 'color:#9d947c;margin:8px 0' }, 'No persistent mistakes — keep drilling.'),
+      ),
+    ),
+  ];
+}
+
 function renderStats() {
   const s = state.stats;
   const acc = s.drills.length
@@ -151,6 +211,7 @@ function renderStats() {
         ),
       ),
     ),
+    ...strategySection(s.strategy),
     ...(Object.keys(state.runs).length ? [
       el('div', { class: 'panel-title', style: 'margin-top:18px' }, 'Bankroll over rounds'),
       ...runCharts,

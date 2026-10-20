@@ -5,6 +5,9 @@ Illustrious-18 deviations — with casino-table visuals. Runs offline, zero
 dependencies, starts with one command.
 
 Created: 2026-10-19. Status: COMPLETE (Hi-Lo only, per user decision).
+2026-10-20: Perfect Strategy trainer added (basic-strategy drills, mastery
+tracking, trouble-spot review, engine-rendered chart) — no counting, user
+request.
 
 ## Gamification phase (added later same day, COMPLETE)
 

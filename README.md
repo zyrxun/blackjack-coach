@@ -1,8 +1,8 @@
 # Blackjack Coach
 
-Learn to count cards (Hi-Lo) in your browser: lessons, drills, and a full
-casino table with a live count, coach hints, and Illustrious-18 deviation
-prompts.
+Learn to count cards (Hi-Lo) and play perfect basic strategy in your browser:
+lessons, drills, a strategy trainer, and a full casino table with a live
+count, coach hints, and Illustrious-18 deviation prompts.
 
 ## Play online
 
@@ -24,9 +24,10 @@ your browser's localStorage.
 
     npm test          # or: node --test tests/
 
-32 tests cover the engine: hand math, shoe/penetration, Hi-Lo counting,
+44 tests cover the engine: hand math, shoe/penetration, Hi-Lo counting,
 full table rules (peek, insurance, splits, DAS, surrender, S17/H17,
-payouts), basic strategy charts, and the Illustrious 18 indices.
+payouts), basic strategy charts, the Illustrious 18 indices, and the
+strategy-trainer scenario generator.
 
 ## What's inside
 
@@ -45,6 +46,10 @@ payouts), basic strategy charts, and the Illustrious 18 indices.
   loss shake, blackjack slam-in banner, synthesized sounds (mute via 🔊),
   live Hi-Lo running + true count, bet-spread advice, shuffle-time count
   quizzes. All motion respects `prefers-reduced-motion`.
+- **Perfect Strategy** — basic-strategy trainer with **no counting**: random
+  hands graded against the exact chart, a coaching "why" after every answer,
+  per-hand mastery stats, a "my trouble spots" focus mode, and a full
+  color-coded strategy chart rendered straight from the engine tables.
 - **Count Drill** — cards flip at adjustable speed; the app quizzes your
   running count at random checkpoints and grades accuracy and streaks.
 - **Lessons** — six interactive lessons: why counting works → card values →
