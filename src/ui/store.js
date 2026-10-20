@@ -6,6 +6,7 @@ export const DEFAULTS = {
     numDecks: 6, penetration: 0.75, hitSoft17: false, das: true,
     surrender: true, showCount: true, coachHints: true, shuffleQuiz: true,
     bankroll: 1000, minBet: 5, sound: true, feedback: true, theme: 'toon',
+    cardArt: 'classic',
   },
   stats: {
     drills: [],            // {when, mode, cards, checks, correct, bestStreak}

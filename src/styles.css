@@ -204,13 +204,15 @@ main { padding: 18px; max-width: 1400px; margin: 0 auto; }
 }
 .menu-btn {
   background: var(--menu-btn-bg);
-  color: var(--text); border: 1px solid var(--menu-btn-border); border-radius: 14px;
-  padding: 22px 12px; cursor: pointer; font-size: 1.05em; font-weight: 600;
-  display: flex; flex-direction: column; gap: 6px; align-items: center;
-  transition: transform 0.12s, border-color 0.12s;
+  color: var(--text); border: 1px solid var(--menu-btn-border); border-radius: 16px;
+  padding: 26px 14px; cursor: pointer; font-size: 1.05em; font-weight: 600;
+  display: flex; flex-direction: column; gap: 8px; align-items: center;
+  transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.18);
 }
-.menu-btn:hover { transform: translateY(-3px); border-color: var(--gold); }
-.menu-btn .big { font-size: 1.9em; }
+.menu-btn:hover { transform: translateY(-4px) scale(1.02); border-color: var(--gold);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.28), 0 0 16px rgba(212,175,55,0.28); }
+.menu-btn .big { font-size: 2.2em; filter: drop-shadow(0 3px 5px rgba(0,0,0,0.3)); }
 .menu-btn small { color: var(--muted); font-weight: 400; }
 .hint { color: var(--faint); font-size: 0.85em; }
 
@@ -222,7 +224,7 @@ main { padding: 18px; max-width: 1400px; margin: 0 auto; }
   display: flex; flex-direction: column; justify-content: space-between;
   transition: background 0.3s;
 }
-#screen-play .table-felt { flex: 1 0 auto; }
+#screen-play .table-felt { flex: 1 0 auto; max-height: min(70vh, 760px); margin-bottom: 14px; }
 .area-label {
   color: var(--felt-label); font-size: 0.85em; letter-spacing: 2px;
   text-transform: uppercase; text-align: center; margin-bottom: 8px;
@@ -248,7 +250,7 @@ main { padding: 18px; max-width: 1400px; margin: 0 auto; }
 
 /* playing cards */
 .card {
-  width: clamp(92px, 7.5vw, 132px); height: clamp(128px, 10.4vw, 184px); border-radius: 9px; background: var(--card-bg);
+  width: clamp(92px, 8.4vw, 152px); height: clamp(128px, 11.7vw, 212px); border-radius: 9px; background: var(--card-bg);
   border: var(--card-border-w) solid var(--card-edge); position: relative; flex: 0 0 auto;
   box-shadow: 0 3px 8px rgba(0,0,0,0.25);
   perspective: 600px;
@@ -274,10 +276,10 @@ main { padding: 18px; max-width: 1400px; margin: 0 auto; }
   text-align: center;
 }
 .card .corner.br { top: auto; left: auto; right: 7px; bottom: 5px; transform: rotate(180deg); }
-.card .pip { font-size: clamp(2.6em, 3.6vw, 3.7em); }
+.card .pip { font-size: clamp(2.6em, 4vw, 4.1em); }
 .card.red { color: var(--card-red); }
 .card.black { color: var(--card-ink); }
-.card.small { width: clamp(64px, 5.4vw, 94px); height: clamp(90px, 7.5vw, 131px); }
+.card.small { width: clamp(64px, 6vw, 104px); height: clamp(90px, 8.3vw, 145px); }
 .card.small .pip { font-size: 1.8em; }
 .card.small .corner { font-size: 0.85em; }
 .card .tag-badge {
@@ -565,6 +567,39 @@ table.stats th { color: var(--muted); font-weight: 600; }
 .card .face.front {
   background: radial-gradient(ellipse at 28% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%), var(--card-bg);
 }
+
+/* anime girl cutouts on face cards — only when the secret card-art picker is set to anime */
+body[data-cardart="anime"] .card.red.face-card .face.front {
+  background: radial-gradient(ellipse at 28% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%),
+              url("assets/chibi-red.svg") center bottom / 88% auto no-repeat, var(--card-bg);
+}
+body[data-cardart="anime"] .card.black.face-card .face.front {
+  background: radial-gradient(ellipse at 28% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%),
+              url("assets/chibi-black.svg") center bottom / 88% auto no-repeat, var(--card-bg);
+}
+body[data-cardart="anime"] .card.face-card .pip { opacity: 0.3; }
+
+/* secret card-art picker: invisible hit target in the top-right corner */
+#art-secret-wrap { position: relative; display: flex; }
+#art-secret {
+  width: 20px; height: 20px; background: none; border: none; cursor: default; opacity: 0;
+}
+#art-menu {
+  position: absolute; right: 0; top: calc(100% + 10px); z-index: 60;
+  background: var(--panel); border: 1px solid var(--gold); border-radius: 12px;
+  padding: 10px; width: 150px; box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+  display: flex; flex-direction: column; gap: 6px;
+}
+#art-menu .art-title {
+  font-size: 0.72em; color: var(--gold); text-transform: uppercase;
+  letter-spacing: 1px; padding: 0 4px 2px;
+}
+#art-menu button {
+  background: var(--panel-alt); color: var(--text); border: 1px solid var(--panel-edge);
+  border-radius: 8px; padding: 8px 12px; cursor: pointer; text-align: left; font-size: 0.92em;
+}
+#art-menu button:hover { border-color: var(--gold); }
+#art-menu button.on { border-color: var(--good); background: var(--quiz-ok-bg); }
 
 /* aces glow gold; face cards wear a thin gold frame */
 .card.ace .pip {

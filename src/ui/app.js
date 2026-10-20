@@ -139,4 +139,28 @@ function renderStats() {
   );
 }
 
+// ---- secret card-art picker (invisible corner button, top right) ----
+document.body.dataset.cardart = state.settings.cardArt || 'classic';
+const artMenu = document.getElementById('art-menu');
+function syncArtMenu() {
+  artMenu.querySelectorAll('[data-art]').forEach(b =>
+    b.classList.toggle('on', b.dataset.art === state.settings.cardArt));
+}
+document.getElementById('art-secret').addEventListener('click', e => {
+  e.stopPropagation();
+  syncArtMenu();
+  artMenu.classList.toggle('hidden');
+});
+artMenu.querySelectorAll('[data-art]').forEach(b => b.addEventListener('click', () => {
+  state.settings.cardArt = b.dataset.art;
+  document.body.dataset.cardart = b.dataset.art;
+  save(state);
+  artMenu.classList.add('hidden');
+}));
+document.addEventListener('click', e => {
+  if (!artMenu.classList.contains('hidden') && !artMenu.contains(e.target)) {
+    artMenu.classList.add('hidden');
+  }
+});
+
 show('menu');
