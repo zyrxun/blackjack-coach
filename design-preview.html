@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blackjack Coach — pick a look</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #14110d; color: #f5f0e1; font-family: "Segoe UI", system-ui, sans-serif; padding: 24px; }
+  h1 { text-align: center; font-size: 1.6em; margin: 8px 0 4px; }
+  p.sub { text-align: center; color: #9d947c; margin: 0 0 26px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 26px; max-width: 1250px; margin: 0 auto; }
+  .tmpl { border-radius: 18px; overflow: hidden; border: 1px solid #3a3226; background: #1b1712; }
+  .tmpl h2 { margin: 0; padding: 14px 18px 2px; font-size: 1.2em; }
+  .tmpl .tag { padding: 0 18px 12px; color: #9d947c; font-size: 0.88em; }
+  .tmpl .stage { padding: 16px; }
+  .note { max-width: 1250px; margin: 22px auto 0; text-align: center; color: #6f684f; font-size: 0.85em; }
+
+  /* shared mini-layout */
+  .mini-hud { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .mini-felt { position: relative; border-radius: 14px; min-height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 14px; }
+  .cards { display: flex; gap: 8px; }
+  .mini-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+  .mini-hud-chips { display: flex; gap: 8px; justify-content: center; margin-top: 8px; }
+  .card { width: 52px; height: 74px; border-radius: 6px; position: relative; display: flex; align-items: center; justify-content: center; flex-direction: column; font-weight: 800; }
+  .card small { font-size: 0.7em; }
+  .chip { width: 34px; height: 34px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 0.72em; font-weight: 800; color: #fff; }
+  .btnrow { display: inline-block; padding: 7px 16px; border-radius: 8px; font-weight: 700; font-size: 0.85em; }
+  .dealer-lbl { font-size: 0.62em; letter-spacing: 2px; opacity: 0.75; text-transform: uppercase; }
+
+  /* ===== 1. Vegas Neon ===== */
+  .t1 .mini-felt { background: radial-gradient(ellipse at center, #241a4d 0%, #150f33 60%, #0d0921 100%); box-shadow: inset 0 0 40px rgba(0,0,0,0.6), 0 0 24px rgba(255,0,170,0.25); border: 2px solid #ff2bd6; }
+  .t1 h2 { color: #ff2bd6; text-shadow: 0 0 12px #ff2bd6; }
+  .t1 .card { background: #0e0a24; color: #00e5ff; border: 1px solid #00e5ff; box-shadow: 0 0 12px rgba(0,229,255,0.45); font-size: 1.15em; }
+  .t1 .card red { color: #ff2bd6; text-shadow: 0 0 8px #ff2bd6; }
+  .t1 .chip { border: 2px solid #fff; box-shadow: 0 0 10px rgba(255,43,214,0.8); background: radial-gradient(circle at 35% 30%, #ff2bd6, #7a1050); }
+  .t1 .btnrow { background: transparent; color: #00e5ff; border: 1px solid #00e5ff; box-shadow: 0 0 10px rgba(0,229,255,0.35); text-transform: uppercase; letter-spacing: 2px; font-size: 0.72em; }
+  .t1 .hud { display: flex; gap: 6px; }
+  .t1 .hbox { border: 1px solid #00e5ff; color: #00e5ff; border-radius: 6px; padding: 3px 9px; font-size: 0.72em; text-shadow: 0 0 8px #00e5ff; background: rgba(0,0,0,0.4); }
+
+  /* ===== 2. Cartoon Casino ===== */
+  .t2 .mini-felt { background: radial-gradient(ellipse at center, #43b98a 0%, #2e9670 100%); border: 5px solid #8a5a2b; box-shadow: 0 8px 0 #5d3c1c; }
+  .t2 h2 { color: #ff9f1c; }
+  .t2 .card { background: #fffdf5; color: #e63946; border: 3px solid #222; border-radius: 12px; box-shadow: 0 4px 0 rgba(0,0,0,0.25); font-size: 1.3em; }
+  .t2 .card.blk { color: #222; }
+  .t2 .chip { border: 3px dashed #fff; box-shadow: 0 3px 0 rgba(0,0,0,0.3); background: radial-gradient(circle at 35% 30%, #ff5d8f, #d6336c); transform: rotate(-6deg); }
+  .t2 .chip.c2 { background: radial-gradient(circle at 35% 30%, #ffd166, #f4a259); transform: rotate(5deg); }
+  .t2 .btnrow { background: #ff9f1c; color: #4a2c00; border: 3px solid #222; border-radius: 14px; box-shadow: 0 4px 0 #222; }
+  .t2 .btnrow:active { transform: translateY(3px); box-shadow: 0 1px 0 #222; }
+  .t2 .hud { display: flex; gap: 6px; }
+  .t2 .hbox { background: #fffdf5; color: #222; border: 3px solid #222; border-radius: 12px; padding: 3px 10px; font-size: 0.75em; font-weight: 800; box-shadow: 0 3px 0 rgba(0,0,0,0.25); }
+  .t2 .hbox span { color: #e63946; }
+
+  /* ===== 3. Retro Arcade ===== */
+  .t3 { font-family: "Courier New", monospace; }
+  .t3 .mini-felt { background: #000; border: 3px solid #33ff66; box-shadow: inset 0 0 30px rgba(51,255,102,0.15); position: relative; }
+  .t3 .mini-felt::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,0.25) 0 2px, transparent 2px 4px); pointer-events: none; }
+  .t3 h2 { color: #33ff66; font-family: "Courier New", monospace; letter-spacing: 3px; text-transform: uppercase; }
+  .t3 .card { background: #000; color: #33ff66; border: 2px solid #33ff66; font-size: 1.1em; }
+  .t3 .card red { color: #ff3355; }
+  .t3 .chip { border: 2px solid #ffcc00; color: #ffcc00; background: #000; }
+  .t3 .btnrow { background: #33ff66; color: #000; border: none; text-transform: uppercase; letter-spacing: 2px; font-size: 0.7em; }
+  .t3 .hud { display: flex; gap: 10px; }
+  .t3 .hbox { color: #ffcc00; font-size: 0.72em; letter-spacing: 1px; }
+
+  /* ===== 4. Playful Pastel ===== */
+  .t4 .mini-felt { background: linear-gradient(160deg, #e0f2ef, #cdeaea); border-radius: 20px; box-shadow: 0 10px 24px rgba(90,150,140,0.25); }
+  .t4 h2 { color: #5b8a8a; }
+  .t4 .card { background: #fff; color: #5b8a8a; border: none; box-shadow: 0 4px 12px rgba(90,140,140,0.3); font-size: 1.25em; }
+  .t4 .card.red { color: #f4a0b5; }
+  .t4 .chip { background: #a8dadc; color: #457b9d; border: none; box-shadow: 0 3px 8px rgba(69,123,157,0.35); font-size: 0.8em; }
+  .t4 .btnrow { background: #f4a0b5; color: #fff; border-radius: 999px; box-shadow: 0 4px 12px rgba(244,160,181,0.5); }
+  .t4 .hud { display: flex; gap: 6px; }
+  .t4 .hbox { background: #fff; color: #457b9d; border-radius: 999px; padding: 3px 12px; font-size: 0.75em; font-weight: 700; box-shadow: 0 2px 8px rgba(90,140,140,0.25); }
+
+  /* ===== 5. Pirate Treasure ===== */
+  .t5 .mini-felt { background: linear-gradient(180deg, #d8c096, #c9ad7c); border: 6px solid #5d4037; box-shadow: inset 0 0 30px rgba(93,64,55,0.4); }
+  .t5 h2 { color: #ffb74d; }
+  .t5 .card { background: #fff8e1; color: #4e342e; border: 2px solid #8d6e63; border-radius: 4px; font-size: 1.2em; }
+  .t5 .card.red { color: #bf360c; }
+  .t5 .chip { border: 3px double #ffca28; background: radial-gradient(circle at 35% 30%, #ffca28, #a67c00); color: #3e2723; }
+  .t5 .btnrow { background: linear-gradient(180deg, #ffb74d, #f57c00); color: #3e2723; border: 2px solid #5d4037; border-radius: 6px; font-weight: 900; }
+  .t5 .hud { display: flex; gap: 6px; }
+  .t5 .hbox { background: #fff8e1; color: #5d4037; border: 2px solid #8d6e63; border-radius: 6px; padding: 3px 10px; font-size: 0.75em; font-weight: 800; }
+</style>
+</head>
+<body>
+  <h1>Pick the new look for Blackjack Coach</h1>
+  <p class="sub">Same game, five art directions — live mockups of the table, cards, chips and HUD. Reply with the number/name you want.</p>
+  <div class="grid">
+
+    <div class="tmpl t1">
+      <h2>1 · Vegas Neon</h2>
+      <div class="tag">Night-club purple + neon pink/cyan glow. Sleek, grown-up, flashy.</div>
+      <div class="stage">
+        <div class="mini-hud"><div class="hud"><span class="hbox">$2,000</span><span class="hbox">TC +2</span><span class="hbox">EV −$12</span></div></div>
+        <div class="mini-felt">
+          <div class="dealer-lbl">dealer</div>
+          <div class="cards">
+            <div class="card red">A<small>♥</small></div>
+            <div class="card">10<small>♠</small></div>
+          </div>
+          <div class="mini-hud-chips"><span class="chip">25</span><span class="chip">100</span></div>
+        </div>
+        <div class="mini-actions"><span class="btnrow">Hit</span><span class="btnrow">Stand</span><span class="btnrow">Double</span></div>
+      </div>
+    </div>
+
+    <div class="tmpl t2">
+      <h2>2 · Cartoon Casino</h2>
+      <div class="tag">Bright greens, chunky outlines, bouncy buttons. Mobile-game energy.</div>
+      <div class="stage">
+        <div class="mini-hud"><div class="hud"><span class="hbox">$2,000</span><span class="hbox">🔥 <span>x4</span></span><span class="hbox">+$25</span></div></div>
+        <div class="mini-felt">
+          <div class="dealer-lbl">dealer</div>
+          <div class="cards">
+            <div class="card red">A<small>♥</small></div>
+            <div class="card blk">10<small>♠</small></div>
+          </div>
+          <div class="mini-hud-chips"><span class="chip">25</span><span class="chip c2">100</span></div>
+        </div>
+        <div class="mini-actions"><span class="btnrow">Hit!</span><span class="btnrow">Stand</span><span class="btnrow">Double</span></div>
+      </div>
+    </div>
+
+    <div class="tmpl t3">
+      <h2>3 · Retro Arcade</h2>
+      <div class="tag">Pixel-monochrome terminal: green on black, scanlines, old-school.</div>
+      <div class="stage">
+        <div class="mini-hud"><div class="hud"><span class="hbox">$2,000</span><span class="hbox">TC+2</span><span class="hbox">SCORE 1250</span></div></div>
+        <div class="mini-felt">
+          <div class="dealer-lbl">dealer</div>
+          <div class="cards">
+            <div class="card red">A<small>♥</small></div>
+            <div class="card">10<small>♠</small></div>
+          </div>
+          <div class="mini-hud-chips"><span class="chip">25</span><span class="chip">100</span></div>
+        </div>
+        <div class="mini-actions"><span class="btnrow">Hit</span><span class="btnrow">Stand</span><span class="btnrow">Double</span></div>
+      </div>
+    </div>
+
+    <div class="tmpl t4">
+      <h2>4 · Playful Pastel</h2>
+      <div class="tag">Soft mint/peach, pill buttons, friendly and calm. Duolingo vibes.</div>
+      <div class="stage">
+        <div class="mini-hud"><div class="hud"><span class="hbox">$2,000</span><span class="hbox">🔥 x4</span><span class="hbox">+$25</span></div></div>
+        <div class="mini-felt">
+          <div class="dealer-lbl">dealer</div>
+          <div class="cards">
+            <div class="card red">A<small>♥</small></div>
+            <div class="card">10<small>♠</small></div>
+          </div>
+          <div class="mini-hud-chips"><span class="chip">25</span><span class="chip">100</span></div>
+        </div>
+        <div class="mini-actions"><span class="btnrow">Hit</span><span class="btnrow">Stand</span><span class="btnrow">Double</span></div>
+      </div>
+    </div>
+
+    <div class="tmpl t5">
+      <h2>5 · Pirate Treasure</h2>
+      <div class="tag">Parchment, wood and gold doubloons. Treasure-hunt adventure mood.</div>
+      <div class="stage">
+        <div class="mini-hud"><div class="hud"><span class="hbox">$2,000</span><span class="hbox"> ☠ streak x4</span><span class="hbox">+25 loot</span></div></div>
+        <div class="mini-felt">
+          <div class="dealer-lbl">dealer</div>
+          <div class="cards">
+            <div class="card red">A<small>♥</small></div>
+            <div class="card">10<small>♠</small></div>
+          </div>
+          <div class="mini-hud-chips"><span class="chip">25</span><span class="chip">100</span></div>
+        </div>
+        <div class="mini-actions"><span class="btnrow">Hit</span><span class="btnrow">Stand</span><span class="btnrow">Double</span></div>
+      </div>
+    </div>
+
+  </div>
+  <p class="note">You can also mix (e.g. "Cartoon Casino colors but bigger buttons"). The winner gets applied to the real game — table, cards, chips, HUD, buttons, lessons, everything.</p>
+</body>
+</html>

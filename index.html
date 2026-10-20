@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blackjack Coach — learn to count cards</title>
+<link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <button id="btn-home" class="logo">♠ Blackjack <b>Coach</b></button>
+  <div class="top-stats">
+    <span id="hdr-bankroll" class="pill hidden"></span>
+    <span id="hdr-count" class="pill hidden"></span>
+  </div>
+</header>
+
+<main>
+  <section id="screen-menu" class="screen">
+    <div class="menu-wrap">
+      <h1>Learn to count cards</h1>
+      <p class="tagline">Hi-Lo counting, basic strategy and the Illustrious 18 — with a full casino table.</p>
+      <nav class="menu-grid">
+        <button class="menu-btn" data-goto="runs"><span class="big">🃏</span><span>Play</span><small>Pick a run, chase the goal</small></button>
+        <button class="menu-btn" data-goto="drill"><span class="big">⚡</span><span>Count Drill</span><small>Train speed and accuracy</small></button>
+        <button class="menu-btn" data-goto="lessons"><span class="big">🎓</span><span>Lessons</span><small>From first principles to deviations</small></button>
+        <button class="menu-btn" data-goto="stats"><span class="big">📊</span><span>Stats</span><small>Accuracy, streaks, profit</small></button>
+        <button class="menu-btn" data-goto="settings"><span class="big">⚙️</span><span>Settings</span><small>Feedback, sound, coaching level</small></button>
+      </nav>
+      <p class="hint">For entertainment and skill training. Card counting is legal, but casinos may refuse service.</p>
+    </div>
+  </section>
+
+  <section id="screen-runs" class="screen hidden">
+    <div class="menu-wrap" style="padding-top:2vh">
+      <h1 style="font-size:1.7em">Choose your run</h1>
+      <p class="tagline">Double the starting bankroll to beat the run. Progress saves per profile.</p>
+    </div>
+    <div id="runs-list" class="runs-list"></div>
+  </section>
+
+  <section id="screen-play" class="screen hidden">
+    <div id="play-hud" class="hud"></div>
+    <div class="table-felt">
+      <div class="dealer-area">
+        <div class="area-label">Dealer <span id="play-dealer-total" class="total-badge hidden"></span></div>
+        <div id="play-dealer-cards" class="cards-row"></div>
+      </div>
+      <div id="play-message" class="table-message"></div>
+      <div class="player-area">
+        <div id="play-hands" class="hands-row"></div>
+      </div>
+    </div>
+    <div id="play-feedback" class="fb-banner hidden"></div>
+    <div class="control-bar">
+      <div id="play-bet-controls" class="controls-group">
+        <span class="group-label">Bet</span>
+        <button class="chip chip-5" data-chip="5">5</button>
+        <button class="chip chip-25" data-chip="25">25</button>
+        <button class="chip chip-100" data-chip="100">100</button>
+        <button class="chip chip-500" data-chip="500">500</button>
+        <button class="btn small" id="play-bet-clear">Clear</button>
+        <button class="btn primary" id="play-deal">Deal</button>
+      </div>
+      <div id="play-actions" class="controls-group hidden">
+        <button class="btn action" data-action="H">Hit <kbd>H</kbd></button>
+        <button class="btn action" data-action="S">Stand <kbd>S</kbd></button>
+        <button class="btn action" data-action="D">Double <kbd>D</kbd></button>
+        <button class="btn action" data-action="P">Split <kbd>P</kbd></button>
+        <button class="btn action" data-action="R">Surrender <kbd>R</kbd></button>
+        <button class="btn action" id="play-ins-yes">Insurance <kbd>Y</kbd></button>
+        <button class="btn action" id="play-ins-no">No insurance <kbd>N</kbd></button>
+      </div>
+      <div class="controls-group">
+        <button class="btn small" id="play-next" style="display:none">Next round <kbd>Enter</kbd></button>
+        <button class="btn small" id="play-menu">Runs</button>
+      </div>
+    </div>
+    <div class="side-panel">
+      <div class="panel coach-panel">
+        <div class="panel-title">Coach</div>
+        <div id="play-coach" class="coach-text"></div>
+      </div>
+      <div class="panel count-panel">
+        <div class="panel-title">Hi-Lo count <button id="play-count-toggle" class="btn tiny">show/hide</button></div>
+        <div id="play-count" class="count-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-drill" class="screen hidden">
+    <div id="drill-config" class="panel config-panel">
+      <div class="panel-title">Count drill setup</div>
+      <div class="config-row">
+        <label>Mode
+          <select id="drill-mode">
+            <option value="running">Running count</option>
+            <option value="true">True count (asks decks left)</option>
+          </select>
+        </label>
+        <label>Cards
+          <select id="drill-cards"><option>26</option><option selected>52</option><option>104</option></select>
+        </label>
+        <label>Pace
+          <select id="drill-pace">
+            <option value="manual" selected>Manual (space)</option>
+            <option value="2000">Slow (2s)</option>
+            <option value="1000">Medium (1s)</option>
+            <option value="500">Fast (0.5s)</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="drill-hints"> Show card tags</label>
+        <button class="btn primary" id="drill-start">Start drill</button>
+      </div>
+    </div>
+    <div id="drill-run" class="hidden">
+      <div class="drill-progress"><div id="drill-progress-bar"></div></div>
+      <div class="drill-stage">
+        <div id="drill-card-slot" class="cards-row center"></div>
+        <div id="drill-tag" class="drill-tag hidden"></div>
+        <div id="drill-count-display" class="drill-count hidden">Count so far: <b>0</b></div>
+      </div>
+      <div class="drill-controls">
+        <button class="btn primary" id="drill-next">Next card <kbd>Space</kbd></button>
+        <button class="btn" id="drill-quit">End session</button>
+      </div>
+    </div>
+    <div id="drill-summary" class="panel hidden"></div>
+  </section>
+
+  <section id="screen-lessons" class="screen hidden">
+    <div id="lessons-list" class="lessons-list"></div>
+    <div id="lesson-view" class="hidden"></div>
+  </section>
+
+  <section id="screen-stats" class="screen hidden">
+    <div id="stats-content" class="panel"></div>
+  </section>
+
+  <section id="screen-settings" class="screen hidden">
+    <div class="panel config-panel">
+      <div class="panel-title">Settings</div>
+      <div class="config-grid">
+        <label>Theme
+          <select id="set-theme">
+            <option value="toon">🎈 Cartoon Casino</option>
+            <option value="pastel">🌸 Playful Pastel</option>
+            <option value="classic">🌙 Classic Dark</option>
+          </select>
+        </label>
+        <label><input type="checkbox" id="set-feedback" checked> Instant feedback after every move</label>
+        <label><input type="checkbox" id="set-count" checked> Show count while playing</label>
+        <label><input type="checkbox" id="set-hints" checked> Coach hints</label>
+        <label><input type="checkbox" id="set-quiz" checked> Quiz me at every shuffle</label>
+        <label><input type="checkbox" id="set-sound" checked> Sound effects</label>
+      </div>
+      <div class="config-row">
+        <button class="btn danger" id="set-clear">Clear all saved data</button>
+        <button class="btn primary" id="set-save">Save settings</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="modal" class="modal hidden"><div id="modal-box" class="modal-box"></div></div>
+<script type="module" src="src/ui/app.js"></script>
+</body>
+</html>
