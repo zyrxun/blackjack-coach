@@ -4,6 +4,12 @@ Learn to count cards (Hi-Lo) in your browser: lessons, drills, and a full
 casino table with a live count, coach hints, and Illustrious-18 deviation
 prompts.
 
+## Play online
+
+No install, no clone: **https://zyrxun.github.io/blackjack-coach/**
+
+(Progress is stored per browser, so your stats stay your own.)
+
 ## Run it
 
 Any static file server from this directory, e.g.:
