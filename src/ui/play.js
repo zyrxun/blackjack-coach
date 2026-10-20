@@ -3,7 +3,7 @@ import { Table } from '../engine/blackjack.js';
 import { handValue } from '../engine/hand.js';
 import { withDeviations, basicStrategy, insuranceDeviation, betSpread, ACTION_NAMES } from '../engine/strategy.js';
 import { evaluateActionsAV, evaluateInsurance } from '../engine/evaluator.js';
-import { cardNode, el, showModal, hideModal, fmtMoney } from './cards.js';
+import { cardNode, el, showModal, hideModal, fmtMoney, flipUp } from './cards.js';
 import { load, save } from './store.js';
 import { sfx, setSoundEnabled } from './sound.js';
 import { openGlossary } from './glossary.js';
@@ -37,6 +37,8 @@ let lastKeys = new Set();
 let bannerTimer = null;
 let roundSeq = 0;
 let settleFxSeq = -1;
+let holeKeys = new Set();   // dealer cards currently (or last seen) face down
+let lastBankroll = null;    // for the HUD bankroll bump
 
 // ---------- lifecycle ----------
 export function initPlay(stateRef, goto) {
@@ -144,6 +146,7 @@ function dealRound() {
   pendingBet = bet;
   table.startRound(bet);
   roundSeq++;
+  holeKeys.clear();
   run.bankroll = table.bankroll;
   save(state);
   sfx('chip');
@@ -152,6 +155,34 @@ function dealRound() {
   setMessage('');
   if (grade !== null && state.settings.shuffleQuiz) askShuffleQuiz(grade);
   renderAll();
+}
+
+// ---------- animation helpers ----------
+// deal cards face-down, then flip them face-up on landing (dealer-style)
+function scheduleFlip(node, delay = 320) {
+  setTimeout(() => {
+    if (!node.isConnected) return;
+    node.classList.add('flipping');
+    flipUp(node);
+    setTimeout(() => node.classList.remove('flipping'), 600);
+  }, delay);
+}
+
+// gold coin burst over a winning hand
+function coinBurst(host, n = 12) {
+  const colors = ['#f1c40f', '#e67e22', '#f39c12', '#d4af37', '#2ecc71'];
+  for (let i = 0; i < n; i++) {
+    const p = el('span', { class: 'fx-coin' });
+    const ang = -Math.random() * Math.PI;           // upward semicircle
+    const dist = 60 + Math.random() * 80;
+    p.style.setProperty('--dx', `${Math.round(Math.cos(ang) * dist)}px`);
+    p.style.setProperty('--dy', `${Math.round(Math.sin(ang) * dist - 30)}px`);
+    p.style.setProperty('--rot', `${Math.round(Math.random() * 720 - 360)}deg`);
+    p.style.animationDelay = `${(Math.random() * 0.15).toFixed(2)}s`;
+    p.style.background = colors[i % colors.length];
+    host.append(p);
+    setTimeout(() => p.remove(), 1300);
+  }
 }
 
 function snapshot() {
@@ -302,8 +333,10 @@ function renderHud() {
   const p = PROFILES[profileId];
   const acc = run.decisions ? Math.round(100 * run.correct / run.decisions) : 100;
   const prog = Math.max(0, Math.min(1, (run.bankroll - p.start) / (p.goal - p.start)));
+  const bankChanged = lastBankroll !== null && lastBankroll !== run.bankroll;
+  lastBankroll = run.bankroll;
   hud.innerHTML = `
-    <div class="hud-box"><span class="v">${p.icon} ${fmtMoney(run.bankroll)}</span><span class="k">${p.name}</span></div>
+    <div class="hud-box${bankChanged ? ' bump' : ''}"><span class="v">${p.icon} ${fmtMoney(run.bankroll)}</span><span class="k">${p.name}</span></div>
     <div class="hud-box goal"><span class="v">${Math.round(prog * 100)}% <span style="font-weight:400;color:#9d947c">to goal ${fmtMoney(p.goal)}</span></span>
       <div class="run-progress-bar" style="margin-top:6px"><div style="width:${Math.round(prog * 100)}%"></div></div></div>
     <div class="hud-box"><span class="v" style="color:${run.net > 0 ? 'var(--good)' : run.net < 0 ? 'var(--bad)' : 'inherit'}">${run.net > 0 ? '+' : ''}${fmtMoney(run.net)}</span><span class="k">net · ${run.rounds} rds</span></div>
@@ -395,8 +428,16 @@ function renderAll() {
     r.dealer.forEach((d, di) => {
       const key = `d${di}-${d.card.rank}${d.card.suit}`;
       newKeys.add(key);
-      const node = cardNode(d.card, { faceDown: !d.faceUp });
-      if (d.faceUp && !lastKeys.has(key)) node.classList.add('dealt');
+      const isNew = d.faceUp && !lastKeys.has(key);
+      const wasHidden = d.faceUp && holeKeys.has(key);
+      const node = cardNode(d.card, { faceDown: !d.faceUp || isNew || wasHidden });
+      if (d.faceUp) holeKeys.delete(key); else holeKeys.add(key);
+      if (isNew) {
+        node.classList.add('dealt');
+        scheduleFlip(node);
+      } else if (wasHidden) {
+        scheduleFlip(node, 80);
+      }
       dealerRow.append(node);
     });
   }
@@ -420,8 +461,12 @@ function renderAll() {
       h.cards.forEach((c, ci) => {
         const key = `p${i}-${ci}-${c.rank}${c.suit}`;
         newKeys.add(key);
-        const node = cardNode(c);
-        if (!lastKeys.has(key)) node.classList.add('dealt');
+        const isNew = !lastKeys.has(key);
+        const node = cardNode(c, { faceDown: isNew });
+        if (isNew) {
+          node.classList.add('dealt');
+          scheduleFlip(node);
+        }
         cardsBox.append(node);
       });
       const { total, soft } = handValue(h.cards);
@@ -436,8 +481,10 @@ function renderAll() {
       }, cardsBox, meta);
       if (r.phase === 'settle' && r.results && settleFxSeq !== roundSeq) {
         const net = r.results[i].net;
-        if (net > 0) handEl.classList.add('result-win');
-        else if (net < 0) handEl.classList.add('result-lose');
+        if (net > 0) {
+          handEl.classList.add('result-win');
+          coinBurst(handEl, r.results[i].outcome === 'bj' ? 22 : 12);
+        } else if (net < 0) handEl.classList.add('result-lose');
       }
       const coins = Math.max(1, Math.min(6, Math.round(h.bet / (table.rules.minBet * 2) || 1)));
       const stack = el('div', { class: 'chip-stack' });
@@ -482,6 +529,12 @@ function renderAll() {
     if (settleFxSeq !== roundSeq) {
       settleFxSeq = roundSeq;
       sfx(anyBj ? 'bj' : totalNet > 0 ? 'win' : totalNet < 0 ? 'lose' : 'push');
+      const dv = handValue(r.dealer.map(d => d.card));
+      const badgeEl = $('play-dealer-total');
+      if (dv.total > 21 && badgeEl) {
+        badgeEl.classList.add('bust-flash');
+        setTimeout(() => badgeEl.classList.remove('bust-flash'), 1100);
+      }
       run.rounds++;
       run.hands += r.results.length;
       run.wagered += r.bet;

@@ -40,9 +40,11 @@ payouts), basic strategy charts, and the Illustrious 18 indices.
   Carlo EVs of every option ("Stand +0.43 · Hit −0.77 · cost ≈ $30").
   Toggle with the 🎯 HUD button.
 - **Play** — 1/2/6/8-deck shoe, chip betting with drop animations, dealt-card
-  fly-ins, win glow / loss shake, blackjack shine banner, synthesized sounds
-  (mute via 🔊), live Hi-Lo running + true count, bet-spread advice,
-  shuffle-time count quizzes.
+  fly-ins that flip face-up on landing (gloss sweep, ace glow, gold frames on
+  face cards, coin-burst wins, dealer-bust flash, bankroll bump), win glow /
+  loss shake, blackjack slam-in banner, synthesized sounds (mute via 🔊),
+  live Hi-Lo running + true count, bet-spread advice, shuffle-time count
+  quizzes. All motion respects `prefers-reduced-motion`.
 - **Count Drill** — cards flip at adjustable speed; the app quizzes your
   running count at random checkpoints and grades accuracy and streaks.
 - **Lessons** — six interactive lessons: why counting works → card values →

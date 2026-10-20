@@ -254,7 +254,7 @@ main { padding: 18px; max-width: 1080px; margin: 0 auto; }
 .card .face {
   position: absolute; inset: 0; border-radius: 9px;
   display: flex; align-items: center; justify-content: center;
-  backface-visibility: hidden; transition: transform 0.35s;
+  backface-visibility: hidden; transition: transform 0.5s cubic-bezier(0.25, 0.9, 0.35, 1.18);
 }
 .card .face.front {
   transform: rotateY(180deg);
@@ -492,7 +492,7 @@ table.stats th { color: var(--muted); font-weight: 600; }
   from { transform: translate(46vw, -26vh) rotate(28deg) scale(0.55); opacity: 0.2; }
   to { transform: none; opacity: 1; }
 }
-.card.dealt { animation: dealIn 0.42s cubic-bezier(0.2, 0.8, 0.3, 1); }
+.card.dealt { animation: dealIn 0.42s cubic-bezier(0.2, 0.8, 0.3, 1), cardLand 0.28s ease-out 0.42s; }
 @keyframes popIn { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
 .card.pop { animation: popIn 0.25s ease-out; }
 
@@ -524,13 +524,108 @@ table.stats th { color: var(--muted); font-weight: 600; }
   display: inline-block; padding: 6px 26px; border-radius: 10px;
   background: linear-gradient(100deg, #241c05, #b89420, #241c05);
   background-size: 250% 100%; color: #ffe9a3; font-weight: 900; letter-spacing: 3px;
-  animation: bjShine 1.4s linear infinite, popIn 0.3s ease-out;
+  animation: bjShine 1.4s linear infinite, bjPop 0.5s cubic-bezier(0.2, 1.7, 0.4, 1);
 }
 @keyframes bjShine { from { background-position: 200% 0; } to { background-position: -50% 0; } }
+@keyframes bjPop { from { transform: scale(0.3) rotate(-4deg); } to { transform: scale(1) rotate(0); } }
 
 /* count badge pulse when the shoe gets spicy */
 @keyframes countPulse { 0%,100% { box-shadow: 0 0 0 rgba(212,175,55,0); } 50% { box-shadow: 0 0 16px rgba(212,175,55,0.7); } }
 .pill.spicy { animation: countPulse 1.2s ease-in-out infinite; border-color: var(--gold); }
+
+/* ==================== JUICE PASS: flips, pops, card flair ==================== */
+
+/* landing bounce chained after the fly-in */
+@keyframes cardLand {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.07); box-shadow: 0 10px 22px rgba(0,0,0,0.4); }
+  100% { transform: scale(1); }
+}
+
+/* gloss sweep across the card right after it lands */
+.card.dealt::after {
+  content: ''; position: absolute; inset: 0; border-radius: 9px; z-index: 3;
+  background: linear-gradient(115deg, transparent 32%, rgba(255,255,255,0.55) 50%, transparent 68%);
+  background-size: 260% 260%; background-position: 220% 0;
+  animation: glossSweep 0.7s ease-out 0.46s both; pointer-events: none;
+}
+@keyframes glossSweep { to { background-position: -120% 0; } }
+
+/* springy pop while a card turns over */
+.card.flipping { animation: flipPop 0.5s cubic-bezier(0.3, 1.4, 0.5, 1); }
+@keyframes flipPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.1) rotate(1.5deg); box-shadow: 0 12px 26px rgba(0,0,0,0.45); }
+  100% { transform: scale(1); }
+}
+
+/* card faces get a soft sheen for depth */
+.card .face.front {
+  background: radial-gradient(ellipse at 28% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%), var(--card-bg);
+}
+
+/* aces glow gold; face cards wear a thin gold frame */
+.card.ace .pip {
+  text-shadow: 0 0 10px rgba(212,175,55,0.95), 0 0 24px rgba(212,175,55,0.5);
+  animation: aceGlow 2.4s ease-in-out infinite;
+}
+@keyframes aceGlow {
+  0%, 100% { text-shadow: 0 0 8px rgba(212,175,55,0.7), 0 0 18px rgba(212,175,55,0.35); }
+  50% { text-shadow: 0 0 14px rgba(212,175,55,1), 0 0 30px rgba(212,175,55,0.6); }
+}
+.card.face-card::before {
+  content: ''; position: absolute; inset: 4px; border-radius: 6px; z-index: 2;
+  border: 1px solid rgba(212,175,55,0.6); pointer-events: none;
+}
+
+/* cards lift on hover inside a hand */
+.player-hand .card { transition: transform 0.15s ease-out, box-shadow 0.15s ease-out; }
+.player-hand .card:hover { transform: translateY(-5px) rotate(-1deg); box-shadow: 0 9px 20px rgba(0,0,0,0.38); }
+
+/* the hand whose turn it is breathes gold */
+.player-hand { position: relative; }
+.player-hand.active { animation: handPulse 1.8s ease-in-out infinite; }
+@keyframes handPulse {
+  0%, 100% { box-shadow: 0 0 0 rgba(212,175,55,0); }
+  50% { box-shadow: 0 0 18px rgba(212,175,55,0.5); }
+}
+
+/* winning hands rain coins */
+.fx-coin {
+  position: absolute; left: 50%; top: 30%; width: 11px; height: 11px;
+  border-radius: 50%; z-index: 5; pointer-events: none;
+  box-shadow: inset -2px -2px 3px rgba(0,0,0,0.35), 0 0 6px rgba(241,196,15,0.55);
+  animation: coinFly 0.95s ease-out forwards;
+}
+@keyframes coinFly {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  70% { opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.55); opacity: 0; }
+}
+
+/* HUD bankroll bumps when it changes */
+.hud-box.bump .v { animation: bump 0.45s cubic-bezier(0.3, 1.6, 0.5, 1); }
+@keyframes bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.28); color: var(--gold); }
+  100% { transform: scale(1); }
+}
+
+/* dealer bust: red flash on the total badge */
+.total-badge.bust-flash { animation: bustFlash 1s ease-out; }
+@keyframes bustFlash {
+  0%, 100% { box-shadow: none; }
+  25%, 65% { box-shadow: 0 0 20px rgba(231,76,60,0.95); background: rgba(160,30,20,0.75); }
+  45%, 85% { box-shadow: none; }
+}
+
+/* chips squish when tossed */
+.chip:active { transform: scale(0.9); }
+
+/* respect reduced motion: no decorative animation or transition */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
 
 /* ==================== BEGINNER LAYER: glossary + table tour ==================== */
 

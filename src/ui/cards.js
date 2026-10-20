@@ -20,7 +20,8 @@ export function el(tag, attrs = {}, ...children) {
 // face-down cards animate on .up
 export function cardNode(card, { small = false, faceDown = false, showTag = false } = {}) {
   const red = card.suit === 'H' || card.suit === 'D';
-  const c = el('div', { class: `card ${small ? 'small' : ''} ${red ? 'red' : 'black'} ${faceDown ? '' : 'up'}` });
+  const flair = card.rank === 'A' ? 'ace' : ['J', 'Q', 'K'].includes(card.rank) ? 'face-card' : '';
+  const c = el('div', { class: `card ${small ? 'small' : ''} ${red ? 'red' : 'black'} ${faceDown ? '' : 'up'} ${flair}` });
   const front = el('div', { class: 'face front' },
     el('div', { class: 'corner' }, card.rank, el('br'), SUIT_GLYPH[card.suit]),
     el('div', { class: 'pip' }, SUIT_GLYPH[card.suit]),
