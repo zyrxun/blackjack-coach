@@ -756,3 +756,8 @@ body[data-cardart="anime"] .card.face-card .pip { opacity: 0.3; }
 .learned-stage li { font-size: 0.82em; color: var(--muted); line-height: 1.45; margin: 2px 0; }
 .learned-empty { color: var(--muted); font-size: 0.85em; }
 @media (max-width: 1100px) { .side-drawer { width: min(320px, 86vw); } }
+
+/* ---- players (persistent bankrolls) ---- */
+.run-card.busted { opacity: 0.55; cursor: default; }
+.run-card.add-card { border-style: dashed; color: var(--muted); }
+.gate-bar { margin: 8px 0; }

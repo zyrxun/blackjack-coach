@@ -39,6 +39,10 @@ window.__storyDbg = () => session && {
   awaiting: session.awaiting, stage: session.stage.id,
 };
 
+export function storyComplete() {
+  return unlockedThrough() >= STAGES.length;
+}
+
 function onKey(e) {
   if (!storyIsActive()) return;
   if ($('screen-story').classList.contains('hidden')) return;

@@ -1,4 +1,4 @@
-// play.js — game mode: run profiles, live HUD, instant EV feedback, animations
+// play.js — game mode: persistent player bankrolls, live HUD, EV feedback
 import { Table } from '../engine/blackjack.js';
 import { handValue } from '../engine/hand.js';
 import { withDeviations, basicStrategy, insuranceDeviation, betSpread, ACTION_NAMES } from '../engine/strategy.js';
@@ -8,23 +8,9 @@ import { load, save } from './store.js';
 import { sfx, setSoundEnabled } from './sound.js';
 import { openGlossary } from './glossary.js';
 
-export const PROFILES = {
-  rookie: {
-    name: 'Rookie Run', icon: '🎓', start: 500, goal: 1000, minBet: 5,
-    desc: '1 deck · S17 · DAS · no surrender · deep 85% shoe. Forgiving pace to learn the flow.',
-    rules: { numDecks: 1, hitSoft17: false, das: true, surrender: false, penetration: 0.85 },
-  },
-  counter: {
-    name: 'Counter Run', icon: '🃏', start: 2000, goal: 4000, minBet: 25,
-    desc: '6 decks · S17 · DAS · late surrender · 75% pen. The standard counting game.',
-    rules: { numDecks: 6, hitSoft17: false, das: true, surrender: true, penetration: 0.75 },
-  },
-  pro: {
-    name: 'High Roller', icon: '👑', start: 5000, goal: 10000, minBet: 100,
-    desc: '6 decks · H17 · DAS · surrender · deep 80% pen · $100 min. Real conditions, real swings.',
-    rules: { numDecks: 6, hitSoft17: true, das: true, surrender: true, penetration: 0.8 },
-  },
-};
+// one table for everyone: the game the lessons teach (6D S17 DAS LS, 75% pen)
+export const GAME_RULES = { numDecks: 6, hitSoft17: false, das: true, surrender: true, penetration: 0.75, minBet: 5 };
+export const START_BANKROLLS = [500, 1000, 2500];
 
 let state = null;
 let gotoFn = null;
@@ -85,52 +71,64 @@ export function initPlay(stateRef, goto) {
 
 export function enterRuns() {
   const list = document.getElementById('runs-list');
-  list.replaceChildren(...Object.entries(PROFILES).map(([id, p]) => {
-    const saved = state.runs[id];
-    const progress = saved ? Math.max(0, Math.min(1, (saved.bankroll - p.start) / (p.goal - p.start))) : 0;
-    let status = '';
-    if (saved?.status === 'won') status = '<span class="run-status won">WON 🏆</span>';
-    else if (saved?.status === 'bust') status = '<span class="run-status bust">BUST</span>';
-    else if (saved) status = '<span class="run-status" style="color:#b7ad93">IN PROGRESS</span>';
-    const sub = saved?.status === 'active'
-      ? `Continue at ${fmtMoney(saved.bankroll)} · ${saved.rounds} rounds`
-      : saved?.status === 'won' ? 'Run beaten — start a fresh one'
-      : saved?.status === 'bust' ? 'Bankroll gone — start a fresh one'
-      : `Start with ${fmtMoney(p.start)}`;
-    const card = el('button', { class: 'run-card' });
+  const profiles = Object.entries(state.profiles);
+  const cards = profiles.map(([id, p]) => {
+    const acc = p.decisions ? Math.round(100 * p.correct / p.decisions) + '%' : '—';
+    const card = el('button', { class: 'run-card' + (p.busted ? ' busted' : '') });
     card.innerHTML = `
-      ${status}
-      <span class="run-icon">${p.icon}</span>
+      ${p.busted ? '<span class="run-status bust">BUSTED</span>' : `<span class="run-status" style="color:#b7ad93">${p.rounds} rounds</span>`}
+      <span class="run-icon">${p.busted ? '💀' : '🎰'}</span>
       <h3>${p.name}</h3>
-      <div class="run-desc">${p.desc}</div>
-      <div class="run-goal">${fmtMoney(p.start)} → ${fmtMoney(p.goal)} · min bet ${fmtMoney(p.minBet)}</div>
-      <div class="run-progress">
-        <div class="run-progress-bar"><div style="width:${Math.round(progress * 100)}%"></div></div>
-        <div style="font-size:0.82em;color:#9d947c;margin-top:4px">${sub}</div>
-      </div>`;
-    card.addEventListener('click', () => startRun(id));
+      <div class="run-goal">Bankroll ${fmtMoney(p.bankroll)}</div>
+      <div class="run-desc">start ${fmtMoney(p.start)} · net <b style="color:${p.net > 0 ? 'var(--good)' : p.net < 0 ? 'var(--bad)' : 'inherit'}">${p.net >= 0 ? '+' : ''}${fmtMoney(p.net)}</b> · acc ${acc}</div>
+      <div class="run-progress"><div style="font-size:0.82em;color:#9d947c;margin-top:4px">${p.busted ? 'Felted. A real player starts a new bankroll.' : `Last played ${new Date(p.lastPlayed).toLocaleDateString()}`}</div></div>`;
+    if (!p.busted) card.addEventListener('click', () => startRun(id));
     return card;
-  }));
+  });
+  const addCard = el('button', { class: 'run-card add-card' });
+  addCard.innerHTML = `<span class="run-icon">➕</span><h3>New player</h3>
+    <div class="run-desc">Start another bankroll. Every player keeps their own persistent roll.</div>`;
+  addCard.addEventListener('click', () => showCreateForm());
+  const kids = [...cards, addCard];
+  if (!profiles.length) {
+    kids.unshift(el('p', { style: 'color:#9d947c;max-width:560px;margin:0 auto 14px' },
+      'A player is a persistent bankroll — it carries across sessions, wins and losses, exactly like real life. Cash out anytime; the roll stays until you bust it.'));
+  }
+  list.replaceChildren(...kids);
+}
+
+function showCreateForm() {
+  const form = el('div', {},
+    el('div', { style: 'font-weight:800;font-size:1.15em;margin-bottom:6px' }, 'New player — pick a starting bankroll'),
+    el('p', { style: 'color:#b7ad93;margin:0 0 12px' }, '6 decks · S17 · DAS · late surrender · 75% pen · $5 min'),
+    el('div', { style: 'display:flex;gap:10px;justify-content:center;flex-wrap:wrap' },
+      ...START_BANKROLLS.map(b => el('button', { class: 'btn primary', onclick: () => { hideModal(); createProfile(b); } }, fmtMoney(b)))),
+    el('div', { style: 'margin-top:12px' }, el('button', { class: 'btn', onclick: hideModal }, 'Cancel')));
+  showModal(form);
+}
+
+function createProfile(bankroll) {
+  const n = Object.keys(state.profiles).length + 1;
+  const id = 'p' + Date.now().toString(36);
+  state.profiles[id] = {
+    name: `Player ${n}`, bankroll, start: bankroll, busted: false, created: Date.now(), lastPlayed: Date.now(),
+    rounds: 0, hands: 0, wagered: 0, net: 0, history: [{ r: 0, b: bankroll }],
+    decisions: 0, correct: 0, evLostUsd: 0, streak: 0, bestStreak: 0, points: 0,
+  };
+  state.activeProfile = id;
+  save(state);
+  startRun(id);
 }
 
 function startRun(id) {
   profileId = id;
-  const p = PROFILES[id];
-  run = state.runs[id];
-  if (!run || run.status !== 'active') {
-    run = {
-      status: 'active', bankroll: p.start, start: p.start, goal: p.goal,
-      rounds: 0, hands: 0, wagered: 0, net: 0,
-      history: [{ r: 0, b: p.start }],
-      decisions: 0, correct: 0, evLostUsd: 0,
-      streak: 0, bestStreak: 0, points: 0,
-    };
-    state.runs[id] = run;
-    save(state);
-  }
-  table = new Table({ ...p.rules, minBet: p.minBet });
+  run = state.profiles[id];
+  if (!run || run.busted) { gotoFn('runs'); return; }
+  run.lastPlayed = Date.now();
+  save(state);
+  table = new Table(GAME_RULES);
   table.bankroll = run.bankroll;
-  pendingBet = p.minBet;
+  pendingBet = GAME_RULES.minBet;
   countVisible = state.settings.showCount;
   lastKeys = new Set();
   roundSeq++;
@@ -331,15 +329,13 @@ function rank(acc, decisions) {
 
 function renderHud() {
   const hud = document.getElementById('play-hud');
-  const p = PROFILES[profileId];
   const acc = run.decisions ? Math.round(100 * run.correct / run.decisions) : 100;
-  const prog = Math.max(0, Math.min(1, (run.bankroll - p.start) / (p.goal - p.start)));
+  const peak = (run.history || []).reduce((m, h) => Math.max(m, h.b), run.bankroll);
   const bankChanged = lastBankroll !== null && lastBankroll !== run.bankroll;
   lastBankroll = run.bankroll;
   hud.innerHTML = `
-    <div class="hud-box${bankChanged ? ' bump' : ''}"><span class="v">${p.icon} ${fmtMoney(run.bankroll)}</span><span class="k">${p.name}</span></div>
-    <div class="hud-box goal"><span class="v">${Math.round(prog * 100)}% <span style="font-weight:400;color:#9d947c">to goal ${fmtMoney(p.goal)}</span></span>
-      <div class="run-progress-bar" style="margin-top:6px"><div style="width:${Math.round(prog * 100)}%"></div></div></div>
+    <div class="hud-box${bankChanged ? ' bump' : ''}"><span class="v">${fmtMoney(run.bankroll)}</span><span class="k">${run.name}</span></div>
+    <div class="hud-box"><span class="v" style="color:var(--gold)">${fmtMoney(peak)}</span><span class="k">peak roll</span></div>
     <div class="hud-box"><span class="v" style="color:${run.net > 0 ? 'var(--good)' : run.net < 0 ? 'var(--bad)' : 'inherit'}">${run.net > 0 ? '+' : ''}${fmtMoney(run.net)}</span><span class="k">net · ${run.rounds} rds</span></div>
     <div class="hud-box"><span class="v" style="color:var(--gold)">${run.evLostUsd > 0.005 ? '-' + fmtMoney(run.evLostUsd) : '$0'}</span><span class="k">EV lost</span></div>
     <div class="hud-box"><span class="v">${acc}%</span><span class="k">accuracy${run.decisions ? ` (${run.correct}/${run.decisions})` : ''}</span></div>
@@ -369,34 +365,36 @@ function renderHud() {
 
 function confirmCashOut() {
   showModal(el('div', {},
-    el('div', { style: 'font-weight:800;font-size:1.2em' }, 'Cash out?'),
-    el('p', { style: 'color:#b7ad93' }, `Leave the run with ${fmtMoney(run.bankroll)} (net ${run.net >= 0 ? '+' : ''}${fmtMoney(run.net)}).`),
+    el('div', { style: 'font-weight:800;font-size:1.2em' }, 'Leave the table?'),
+    el('p', { style: 'color:#b7ad93' }, `Your bankroll stays at ${fmtMoney(run.bankroll)} (net ${run.net >= 0 ? '+' : ''}${fmtMoney(run.net)}) — waiting for next session, just like a real player walking away.`),
     el('div', { style: 'display:flex;gap:10px;justify-content:center;margin-top:12px' },
-      el('button', { class: 'btn primary', onclick: () => { hideModal(); endRun('cashed'); } }, 'Cash out'),
+      el('button', { class: 'btn primary', onclick: () => { hideModal(); endRun('cashed'); } }, 'Walk away'),
       el('button', { class: 'btn', onclick: hideModal }, 'Keep playing'))));
 }
 
 function endRun(status) {
-  run.status = status;
   run.bankroll = table ? table.bankroll : run.bankroll;
+  if (status === 'bust') run.busted = true;
   save(state);
   const acc = run.decisions ? Math.round(100 * run.correct / run.decisions) : 0;
-  const p = PROFILES[profileId];
-  const title = status === 'won' ? '🏆 RUN BEATEN!' : status === 'bust' ? '💀 BUSTED' : '💵 Cashed out';
-  if (status === 'won') sfx('trophy'); else if (status === 'bust') sfx('lose');
+  const title = status === 'bust' ? '💀 FELTED' : '💵 Walked away';
+  if (status === 'bust') sfx('lose');
   showModal(el('div', {},
     el('div', { style: 'font-weight:900;font-size:1.4em;margin-bottom:8px' }, title),
+    status === 'bust'
+      ? el('p', { style: 'color:#b7ad93' }, 'Bankroll gone. In real life this is the one number that matters — this player is done. Start a new player with a fresh roll.')
+      : el('p', { style: 'color:#b7ad93' }, `${run.name} keeps ${fmtMoney(run.bankroll)} for next session.`),
     el('table', { class: 'stats', style: 'margin:0 auto' },
       el('tr', {}, el('td', {}, 'Bankroll'), el('td', {}, fmtMoney(run.bankroll))),
-      el('tr', {}, el('td', {}, 'Net'), el('td', {}, `${run.net >= 0 ? '+' : ''}${fmtMoney(run.net)}`)),
+      el('tr', {}, el('td', {}, 'Net (all sessions)'), el('td', {}, `${run.net >= 0 ? '+' : ''}${fmtMoney(run.net)}`)),
       el('tr', {}, el('td', {}, 'Rounds / hands'), el('td', {}, `${run.rounds} / ${run.hands}`)),
       el('tr', {}, el('td', {}, 'Decision accuracy'), el('td', {}, `${acc}% (${run.correct}/${run.decisions})`)),
       el('tr', {}, el('td', {}, 'EV lost to mistakes'), el('td', {}, fmtMoney(run.evLostUsd))),
       el('tr', {}, el('td', {}, 'Points'), el('td', {}, `${run.points} · ${rank(acc, run.decisions)}`)),
     ),
     el('div', { style: 'display:flex;gap:10px;justify-content:center;margin-top:14px' },
-      el('button', { class: 'btn primary', onclick: () => { hideModal(); startRun(profileId); } }, `New ${p.name}`),
-      el('button', { class: 'btn', onclick: () => { hideModal(); gotoFn('runs'); } }, 'Choose run'))));
+      ...(status === 'bust' ? [el('button', { class: 'btn primary', onclick: () => { hideModal(); gotoFn('runs'); } }, 'Players')] : []),
+      el('button', { class: 'btn', onclick: () => { hideModal(); gotoFn('runs'); } }, 'Players list'))));
 }
 
 // ---------- rendering ----------
@@ -546,8 +544,7 @@ function renderAll() {
       if (run.history.length > 500) run.history.shift();
       save(state);
       renderHud();
-      if (run.bankroll >= run.goal) { setTimeout(() => endRun('won'), 900); }
-      else if (run.bankroll < table.rules.minBet) { setTimeout(() => endRun('bust'), 900); }
+      if (run.bankroll < table.rules.minBet) { setTimeout(() => endRun('bust'), 900); }
     }
   } else if (!r) {
     setMessage(`Bet ${fmtMoney(pendingBet)} and deal`);

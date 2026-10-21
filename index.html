@@ -31,8 +31,9 @@
       <nav class="menu-grid">
         <button class="menu-btn" data-goto="story"><span class="big">📖</span><span>Story Mode</span><small>From first hand to card counter</small></button>
         <button class="menu-btn" data-goto="trainer"><span class="big">🎯</span><span>Perfect Strategy</span><small>Learn the best play — no counting</small></button>
-        <button class="menu-btn" data-goto="runs"><span class="big">🃏</span><span>Play</span><small>Pick a run, chase the goal</small></button>
+        <button class="menu-btn" data-goto="runs"><span class="big">🃏</span><span>Play</span><small>Your players · persistent bankrolls</small></button>
         <button class="menu-btn" data-goto="drill"><span class="big">⚡</span><span>Count Drill</span><small>Train speed and accuracy</small></button>
+        <button class="menu-btn" data-goto="lab"><span class="big">🧮</span><span>Bankroll Lab</span><small>EV &amp; risk of ruin for your bet spread</small></button>
         <button class="menu-btn" data-goto="lessons"><span class="big">🎓</span><span>Lessons</span><small>From first principles to deviations</small></button>
         <button class="menu-btn" data-goto="stats"><span class="big">📊</span><span>Stats</span><small>Accuracy, streaks, profit</small></button>
         <button class="menu-btn" data-goto="settings"><span class="big">⚙️</span><span>Settings</span><small>Feedback, sound, coaching level</small></button>
@@ -219,6 +220,41 @@
       </div>
     </div>
     <div id="story-summary" class="panel hidden"></div>
+  </section>
+
+  <section id="screen-gate" class="screen hidden">
+    <div class="panel config-panel" style="max-width:560px;margin:8vh auto 0;text-align:center">
+      <div class="panel-title">🔒 The tables are earned here</div>
+      <p style="color:#b7ad93;margin:8px 0 14px">Real money (even fake real money) comes after school. Finish the Story Mode path and the Lessons, and the tables unlock permanently.</p>
+      <div id="gate-progress"></div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
+        <button class="btn primary" data-goto="story">📖 Story Mode</button>
+        <button class="btn" data-goto="lessons">🎓 Lessons</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="screen-lab" class="screen hidden">
+    <div class="panel config-panel">
+      <div class="panel-title">🧮 Bankroll Lab</div>
+      <p style="color:#b7ad93;margin:4px 0 10px">See what a bet spread does to YOUR bankroll before you sit down — expected value, risk of ruin, and how fast you might double. CVCX-lite, powered by this app's own engine.</p>
+      <div class="config-row">
+        <label>Bankroll $<input type="number" id="lab-bankroll" value="5000" min="100" step="100"></label>
+        <label>Unit $<input type="number" id="lab-unit" value="5" min="5" step="5"></label>
+        <label>Max spread
+          <select id="lab-spread"><option>4</option><option>6</option><option>8</option><option selected>12</option><option>16</option><option>20</option></select>
+        </label>
+        <label>Hands / hour
+          <select id="lab-hph"><option>60</option><option selected>80</option><option>100</option></select>
+        </label>
+        <label>Hands per sim
+          <select id="lab-rounds"><option>10000</option><option selected>25000</option><option>50000</option></select>
+        </label>
+        <button class="btn primary" id="lab-run">Run simulation</button>
+      </div>
+      <p class="hint">Fixed units vs sizing your unit to the current roll (≈ roll ÷ 1000, floor at table min) — same shoes, same perfect-ish play, only the sizing differs.</p>
+    </div>
+    <div id="lab-results" class="panel"></div>
   </section>
 
   <section id="screen-lessons" class="screen hidden">

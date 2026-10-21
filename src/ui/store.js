@@ -15,7 +15,9 @@ export const DEFAULTS = {
     strategy: {},          // perfect-strategy trainer: {key: {seen, right}}
     story: {},             // story mode: {stageId: stars 1-3}
   },
-  runs: {},                // per-profile saved runs
+  profiles: {},            // persistent player bankrolls (post-teaching)
+  activeProfile: null,
+  runs: {},                // legacy run saves (no longer used)
 };
 
 export function load() {
@@ -31,6 +33,8 @@ export function load() {
         strategy: (raw.stats || {}).strategy || {},
         story: (raw.stats || {}).story || {},
       },
+      profiles: raw.profiles || {},
+      activeProfile: raw.activeProfile || null,
       runs: raw.runs || {},
     };
   } catch {

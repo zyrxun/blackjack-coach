@@ -24,10 +24,11 @@ your browser's localStorage.
 
     npm test          # or: node --test tests/
 
-51 tests cover the engine: hand math, shoe/penetration, Hi-Lo counting,
+57 tests cover the engine: hand math, shoe/penetration, Hi-Lo counting,
 full table rules (peek, insurance, splits, DAS, surrender, S17/H17,
 payouts), basic strategy charts, the Illustrious 18 indices, the
-strategy-trainer scenario generator, and the Story Mode curriculum.
+strategy-trainer scenario generator, the Story Mode curriculum, and the
+Bankroll Lab simulator (EV sign, ruin ordering, determinism).
 
 ## What's inside
 
@@ -56,6 +57,13 @@ strategy-trainer scenario generator, and the Story Mode curriculum.
   hands graded against the exact chart, a coaching "why" after every answer,
   per-hand mastery stats, a "my trouble spots" focus mode, and a full
   color-coded strategy chart rendered straight from the engine tables.
+- **Players & persistent bankrolls** — the tables are earned: Play unlocks
+  after finishing the Lessons and the Story Mode path. A player is a persistent
+  bankroll that carries across sessions (walk away anytime, it stays; bust it
+  and that player is done — start another).
+- **Bankroll Lab** — CVCX-lite simulator: pick a roll, unit and max spread and
+  see EV per hour, risk of ruin, time-to-double — comparing fixed-unit sizing
+  against roll-scaled (Kelly-style) sizing on identical shoes.
 - **Count Drill** — cards flip at adjustable speed; the app quizzes your
   running count at random checkpoints and grades accuracy and streaks.
 - **Lessons** — six interactive lessons: why counting works → card values →

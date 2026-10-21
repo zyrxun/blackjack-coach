@@ -14,6 +14,11 @@ count, bet spread, I18 deviations with scripted true counts). Curriculum in
 src/engine/curriculum.js (pure, tested); UI in src/ui/story.js; progress in
 stats.story {stageId: stars}. Known simplification: challenges are decision
 drills, not full table rounds (splits/doubles graded per-hand, no shoe).
+2026-10-20: Runs → persistent player profiles (state.profiles, one shared
+6D S17 DAS LS game, bankroll carries across sessions, bust = player done).
+Play gated behind 6 lessons + full story path (screen-gate). Added Bankroll
+Lab (engine/lab.js + ui/lab.js): CVCX-lite MC comparing fixed-unit vs
+roll-scaled sizing (EV/h, RoR, time-to-double) on seeded shoes.
 
 ## Gamification phase (added later same day, COMPLETE)
 

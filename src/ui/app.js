@@ -3,7 +3,8 @@ import { initPlay, enterRuns } from './play.js';
 import { initDrill, drillIsActive } from './drill.js';
 import { initLessons, enterLessons } from './lessons.js';
 import { initTrainer, trainerIsActive } from './trainer.js';
-import { initStory, storyIsActive, enterStory } from './story.js';
+import { initStory, storyIsActive, enterStory, storyComplete } from './story.js';
+import { initLab, enterLab } from './lab.js';
 import { load, save, resetAll } from './store.js';
 import { setSoundEnabled } from './sound.js';
 import { el, fmtMoney } from './cards.js';
@@ -16,6 +17,25 @@ function applyTheme(t) {
   document.body.dataset.theme = t;
 }
 
+// the tables unlock after the school: all 6 lessons + the full story path
+const TEACHING_LESSONS = ['why', 'values', 'running', 'true', 'betting', 'i18'];
+function playUnlocked() {
+  return storyComplete() && TEACHING_LESSONS.every(id => state.stats.lessons[id]);
+}
+
+function renderGate() {
+  const storyDone = Object.keys(state.stats.story).filter(id => state.stats.story[id] >= 1).length;
+  const lessonsDone = TEACHING_LESSONS.filter(id => state.stats.lessons[id]).length;
+  const bar = (label, done, total) => el('div', { style: 'margin:8px 0' },
+    el('div', { style: 'display:flex;justify-content:space-between;font-size:0.9em' },
+      el('span', {}, label), el('span', {}, `${done}/${total}`)),
+    el('div', { class: 'run-progress-bar' }, el('div', { style: `width:${Math.round(100 * done / total)}%` })));
+  document.getElementById('gate-progress').replaceChildren(
+    bar('📖 Story Mode stages', storyDone, 13),
+    bar('🎓 Lessons', lessonsDone, TEACHING_LESSONS.length),
+  );
+}
+
 function show(screen) {
   if (screen !== 'drill' && drillIsActive()) {
     document.getElementById('drill-quit').click(); // leaving mid-drill: end without saving
@@ -26,12 +46,17 @@ function show(screen) {
   if (screen !== 'story' && storyIsActive()) {
     document.getElementById('story-quit').click(); // leaving mid-stage: stop
   }
+  if ((screen === 'runs' || screen === 'play') && !playUnlocked()) {
+    renderGate();
+    screen = 'gate';
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   document.getElementById('screen-' + screen).classList.remove('hidden');
   const inPlay = screen === 'play';
   document.getElementById('hdr-bankroll').classList.toggle('hidden', !inPlay);
   document.getElementById('hdr-count').classList.toggle('hidden', !inPlay);
   if (screen === 'story') enterStory();
+  if (screen === 'lab') enterLab();
   if (screen === 'runs') enterRuns();
   if (screen === 'lessons') enterLessons();
   if (screen === 'stats') renderStats();
@@ -47,6 +72,7 @@ initDrill(state, show);
 initLessons(state, show);
 initTrainer(state);
 initStory(state);
+initLab(state);
 
 // ---- settings ----
 function loadSettingsForm() {
@@ -157,41 +183,34 @@ function renderStats() {
     el('td', {}, `${d.correct}/${d.checks}`),
     el('td', {}, d.bestStreak + ''),
   ));
-  const chartFor = (r) => {
-    const h = r.history || [];
-    if (h.length < 2) return '';
+  const profRows = Object.entries(state.profiles).map(([id, p]) => el('tr', {},
+    el('td', {}, p.name + (p.busted ? ' 💀' : '')),
+    el('td', {}, fmtMoney(p.bankroll)),
+    el('td', {}, `${p.net >= 0 ? '+' : ''}${fmtMoney(p.net)}`),
+    el('td', {}, String(p.rounds)),
+    el('td', {}, p.decisions ? Math.round(100 * p.correct / p.decisions) + '%' : '—'),
+    el('td', {}, fmtMoney(p.evLostUsd)),
+  ));
+  const profCharts = Object.entries(state.profiles).filter(([, p]) => (p.history || []).length > 2).map(([id, p]) => {
+    const h = p.history;
+    const lo = Math.min(...h.map(x => x.b), p.start) * 0.95;
+    const hi = Math.max(...h.map(x => x.b), p.start) * 1.05;
     const W = 320, H = 90, P = 5;
-    const lo = Math.min(...h.map(p => p.b), r.start) * 0.95;
-    const hi = Math.max(...h.map(p => p.b), r.goal) * 1.05;
     const x = i => P + (W - 2 * P) * (i / Math.max(h.length - 1, 1));
     const y = b => H - P - (H - 2 * P) * ((b - lo) / Math.max(hi - lo, 1));
-    const pts = h.map((p, i) => `${x(i).toFixed(1)},${y(p.b).toFixed(1)}`).join(' ');
+    const pts = h.map((pt, i) => `${x(i).toFixed(1)},${y(pt.b).toFixed(1)}`).join(' ');
     const last = h[h.length - 1];
-    const dotColor = last.b >= r.goal ? 'var(--good)' : last.b < r.start ? 'var(--bad)' : 'var(--gold)';
-    return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
-      <line x1="${P}" y1="${y(r.goal).toFixed(1)}" x2="${W - P}" y2="${y(r.goal).toFixed(1)}" style="stroke:var(--gold)" stroke-dasharray="4 3" stroke-width="1" opacity="0.8"/>
-      <line x1="${P}" y1="${y(r.start).toFixed(1)}" x2="${W - P}" y2="${y(r.start).toFixed(1)}" style="stroke:var(--muted)" stroke-dasharray="2 3" stroke-width="1" opacity="0.6"/>
+    const dotColor = last.b >= p.start ? 'var(--good)' : last.b < p.start ? 'var(--bad)' : 'var(--gold)';
+    const box = el('div', { style: 'border:1px solid var(--panel-edge);border-radius:10px;padding:8px;background:var(--panel-alt)' });
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+      <line x1="${P}" y1="${y(p.start).toFixed(1)}" x2="${W - P}" y2="${y(p.start).toFixed(1)}" style="stroke:var(--muted)" stroke-dasharray="2 3" stroke-width="1" opacity="0.6"/>
       <polyline points="${pts}" fill="none" style="stroke:var(--gold)" stroke-width="1.6" stroke-linejoin="round"/>
       <circle cx="${x(h.length - 1).toFixed(1)}" cy="${y(last.b).toFixed(1)}" r="2.4" style="fill:${dotColor}"/>
     </svg>`;
-  };
-  const runRows = Object.entries(state.runs).map(([id, r]) => el('tr', {},
-    el('td', {}, id),
-    el('td', {}, r.status),
-    el('td', {}, fmtMoney(r.bankroll)),
-    el('td', {}, `${r.net >= 0 ? '+' : ''}${fmtMoney(r.net)}`),
-    el('td', {}, r.decisions ? Math.round(100 * r.correct / r.decisions) + '%' : '—'),
-    el('td', {}, fmtMoney(r.evLostUsd)),
-  ));
-  const runCharts = Object.entries(state.runs).map(([id, r]) => {
-    const wrap = el('div', { style: 'margin-bottom:10px' },
+    return el('div', { style: 'margin-bottom:10px' },
       el('div', { style: 'font-size:0.82em;color:var(--muted);margin:2px 0 4px' },
-        `${id} — ${r.status} at ${fmtMoney(r.bankroll)} · ${r.rounds} rounds · goal ${fmtMoney(r.goal)}`),
-    );
-    const box = el('div', { style: 'border:1px solid var(--panel-edge);border-radius:10px;padding:8px;background:var(--panel-alt)' });
-    box.innerHTML = chartFor(r) || '<p style="color:var(--muted);font-size:0.85em;margin:4px">No history yet — play a few rounds of this run.</p>';
-    wrap.append(box);
-    return wrap;
+        `${p.name} — ${fmtMoney(p.bankroll)} · ${p.rounds} rounds · start ${fmtMoney(p.start)}`),
+      box);
   });
   document.getElementById('stats-content').replaceChildren(
     el('div', { class: 'panel-title' }, 'Your progress'),
@@ -218,13 +237,13 @@ function renderStats() {
       ),
     ),
     ...strategySection(s.strategy),
-    ...(Object.keys(state.runs).length ? [
+    ...(Object.keys(state.profiles).length ? [
       el('div', { class: 'panel-title', style: 'margin-top:18px' }, 'Bankroll over rounds'),
-      ...runCharts,
-      el('div', { class: 'panel-title', style: 'margin-top:18px' }, 'Runs'),
+      ...profCharts,
+      el('div', { class: 'panel-title', style: 'margin-top:18px' }, 'Players'),
       el('table', { class: 'stats' },
-        el('tr', {}, el('th', {}, 'Profile'), el('th', {}, 'Status'), el('th', {}, 'Bankroll'), el('th', {}, 'Net'), el('th', {}, 'Accuracy'), el('th', {}, 'EV lost')),
-        ...runRows,
+        el('tr', {}, el('th', {}, 'Player'), el('th', {}, 'Bankroll'), el('th', {}, 'Net'), el('th', {}, 'Rounds'), el('th', {}, 'Accuracy'), el('th', {}, 'EV lost')),
+        ...profRows,
       ),
     ] : []),
     el('div', { class: 'panel-title', style: 'margin-top:18px' }, 'Recent drills'),
