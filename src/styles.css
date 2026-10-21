@@ -743,3 +743,16 @@ body[data-cardart="anime"] .card.face-card .pip { opacity: 0.3; }
 .quiz-choices { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 8px 0 14px; }
 .quiz-choices .btn.action { min-width: 64px; font-size: 1.05em; }
 .card.dim { opacity: 0.55; }
+
+/* ---- story mode: cumulative tips drawer ---- */
+.tips-toggle { position: absolute; top: 12px; right: 14px; z-index: 6; }
+.side-drawer { position: fixed; top: 64px; right: 14px; width: 320px; max-height: calc(100vh - 84px); overflow-y: auto; z-index: 5; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--panel-edge); background: var(--panel); box-shadow: 0 10px 30px rgba(0,0,0,0.35); }
+.side-drawer.hidden { display: none; }
+.learned-stage { margin: 0 0 12px; padding: 8px 10px; border-left: 3px solid var(--panel-edge); }
+.learned-stage.current { border-left-color: var(--gold); background: var(--panel-alt); }
+.learned-title { font-weight: 800; font-size: 0.92em; margin-bottom: 4px; }
+.learned-title .stars { margin-left: 6px; font-size: 0.85em; }
+.learned-stage ul { margin: 2px 0 0; padding-left: 16px; }
+.learned-stage li { font-size: 0.82em; color: var(--muted); line-height: 1.45; margin: 2px 0; }
+.learned-empty { color: var(--muted); font-size: 0.85em; }
+@media (max-width: 1100px) { .side-drawer { width: min(320px, 86vw); } }

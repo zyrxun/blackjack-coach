@@ -18,6 +18,7 @@ const $ = id => document.getElementById(id);
 export function initStory(stateRef) {
   state = stateRef;
   $('story-quit').addEventListener('click', endRun);
+  $('story-tips-toggle').addEventListener('click', () => { tipsOpen = !tipsOpen; renderTips(); });
   $('story-next').addEventListener('click', () => advance());
   document.querySelectorAll('#story-actions [data-action]').forEach(b =>
     b.addEventListener('click', () => answer(b.dataset.action)));
@@ -50,12 +51,34 @@ function onKey(e) {
   if (map[e.key.toLowerCase()]) { e.preventDefault(); answer(map[e.key.toLowerCase()]); }
 }
 
+// ---- cumulative "what you've learned" drawer -------------------------------
+let tipsOpen = typeof window !== 'undefined' && window.matchMedia('(min-width: 1100px)').matches;
+
+function renderTips() {
+  const through = unlockedThrough();
+  const n = Math.min(through + 1, STAGES.length); // completed stages + the one in progress
+  $('story-tips-toggle').textContent = tipsOpen ? '✕ hide tips' : `📘 Tips · ${n}`;
+  $('story-tips').classList.toggle('hidden', !tipsOpen);
+  if (!tipsOpen) return;
+  const blocks = STAGES.slice(0, n).map((st, i) =>
+    el('div', { class: `learned-stage${i === through ? ' current' : ''}` },
+      el('div', { class: 'learned-title' }, `${st.icon} ${st.title}`,
+        el('span', { class: 'stars' }, starsSaved(st.id) ? '★'.repeat(starsSaved(st.id)) + '☆'.repeat(3 - starsSaved(st.id)) : '')),
+      el('ul', {}, ...st.teach.map(t => el('li', {}, t))),
+    ));
+  $('story-tips').replaceChildren(
+    el('div', { class: 'panel-title' }, 'What you’ve learned'),
+    ...blocks,
+  );
+}
+
 // ---- path view --------------------------------------------------------------
 export function enterStory() {
   hideRun();
   $('story-stage').classList.add('hidden');
   $('story-summary').classList.add('hidden');
   renderPath();
+  renderTips();
 }
 
 function starsSaved(id) {
@@ -114,6 +137,7 @@ function openStage(st) {
     ),
   );
   $('story-stage').classList.remove('hidden');
+  renderTips();
 }
 
 // ---- challenge runner -------------------------------------------------------
@@ -130,6 +154,7 @@ function startChallenge(st) {
   $('story-summary').classList.add('hidden');
   $('story-run').classList.remove('hidden');
   $('story-actions').classList.toggle('hidden', st.challenge.kind !== 'hands');
+  renderTips();
   if (st.challenge.kind === 'hands') { hideQuiz(); nextHand(); }
   else { showQuiz(); nextQuestion(); }
 }
@@ -386,6 +411,7 @@ function finish() {
   );
   hideRun();
   $('story-summary').classList.remove('hidden');
+  renderTips();
 }
 
 function endRun() {
