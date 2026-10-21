@@ -5,6 +5,7 @@ import {
   trueCountAnswer, betAnswer,
 } from '../engine/curriculum.js';
 import { basicStrategy, withDeviations, randomScenario, scenarioKey, ACTION_NAMES } from '../engine/strategy.js';
+import { isDue, byWeakness, grade, scenarioForKey } from '../engine/spaced.js';
 import { handValue, isPair } from '../engine/hand.js';
 import { tagFor } from '../engine/count.js';
 import { cardNode, el, flipUp } from './cards.js';
@@ -190,6 +191,16 @@ function hideQuiz() {
 
 function genHand() {
   const filter = session.stage.challenge.filter;
+  // forgetting curve: on mixed stages, overdue scenarios resurface half the time
+  if (filter.kind === 'any') {
+    const due = Object.entries(state.stats.strategy)
+      .filter(([, v]) => isDue(v))
+      .sort(([, a], [, b]) => byWeakness(a, b));
+    if (due.length && Math.random() < 0.5) {
+      const s = scenarioForKey(due[0][0]);
+      if (s) return s;
+    }
+  }
   for (let i = 0; i < 400; i++) {
     const s = randomScenario();
     if (scenarioMatches(s, filter)) return s;
@@ -315,9 +326,9 @@ function answer(act) {
     } else expected = basic;
     ok = act === expected;
     const key = scenarioKey(cards, dealerUp);
-    const m = state.stats.strategy[key] || { seen: 0, right: 0 };
-    m.seen++;
-    if (ok) m.right++;
+    const m = grade(state.stats.strategy[key] || { seen: 0, right: 0 }, ok);
+    m.seen = (m.seen || 0) + 1;
+    if (ok) m.right = (m.right || 0) + 1;
     state.stats.strategy[key] = m;
     save(state);
     if (ok) {

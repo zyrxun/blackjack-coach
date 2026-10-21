@@ -2,6 +2,7 @@
 import {
   basicStrategy, randomScenario, scenarioKey, upValue, ACTION_NAMES,
 } from '../engine/strategy.js';
+import { isDue, byWeakness, grade, scenarioForKey } from '../engine/spaced.js';
 import { handValue, isPair, TEN_VALUED } from '../engine/hand.js';
 import { cardNode, el, showModal, hideModal, flipUp } from './cards.js';
 import { load, save } from './store.js';
@@ -64,7 +65,24 @@ function startSession() {
   nextHand();
 }
 
+function keyMatchesFocus(key) {
+  const kind = key.split('-')[0];
+  if (session.focus === 'hard' || session.focus === 'soft' || session.focus === 'pair') {
+    return kind === session.focus;
+  }
+  return true; // 'all' and 'trouble' draw from every kind
+}
+
 function genScenario() {
+  // forgetting curve: overdue scenarios come back first — weakest boxes,
+  // most overdue ones, about half the time so new hands keep flowing too
+  const due = Object.entries(state.stats.strategy)
+    .filter(([k, v]) => keyMatchesFocus(k) && isDue(v))
+    .sort(([, a], [, b]) => byWeakness(a, b));
+  if (due.length && Math.random() < 0.5) {
+    const s = scenarioForKey(due[0][0]);
+    if (s) return s;
+  }
   for (let i = 0; i < 400; i++) {
     const s = randomScenario();
     const key = scenarioKey(s.cards, s.dealerUp);
@@ -116,9 +134,9 @@ function answer(act) {
   const expected = basicStrategy(cards, dealerUp);
   const ok = act === expected;
   const key = scenarioKey(cards, dealerUp);
-  const m = state.stats.strategy[key] || { seen: 0, right: 0 };
-  m.seen++;
-  if (ok) m.right++;
+  const m = grade(state.stats.strategy[key] || { seen: 0, right: 0 }, ok);
+  m.seen = (m.seen || 0) + 1;
+  if (ok) m.right = (m.right || 0) + 1;
   state.stats.strategy[key] = m;
   save(state);
 
@@ -170,6 +188,7 @@ function renderMastery() {
       el('span', {}, s ? `${pct}% · ${s} seen` : '—'),
     );
   });
+  const dueCount = Object.values(state.stats.strategy).filter(r => isDue(r)).length;
   const pct = seen ? Math.round(100 * right / seen) : 0;
   box.replaceChildren(
     el('div', { class: 'm-row' },
@@ -178,6 +197,11 @@ function renderMastery() {
       el('span', {}, seen ? `${pct}% · ${seen} seen` : '—'),
     ),
     ...rows,
+    el('div', { class: 'm-row' },
+      el('span', {}, 'Due now'),
+      el('div', { class: 'm-bar' }, el('div', { style: `width:${Math.min(100, dueCount * 5)}%` })),
+      el('span', {}, dueCount ? `${dueCount} scenario${dueCount > 1 ? 's' : ''}` : 'fresh'),
+    ),
   );
 }
 
