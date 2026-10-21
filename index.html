@@ -29,6 +29,7 @@
       <h1>Learn to count cards</h1>
       <p class="tagline">Hi-Lo counting, basic strategy and the Illustrious 18 — with a full casino table.</p>
       <nav class="menu-grid">
+        <button class="menu-btn" data-goto="story"><span class="big">📖</span><span>Story Mode</span><small>From first hand to card counter</small></button>
         <button class="menu-btn" data-goto="trainer"><span class="big">🎯</span><span>Perfect Strategy</span><small>Learn the best play — no counting</small></button>
         <button class="menu-btn" data-goto="runs"><span class="big">🃏</span><span>Play</span><small>Pick a run, chase the goal</small></button>
         <button class="menu-btn" data-goto="drill"><span class="big">⚡</span><span>Count Drill</span><small>Train speed and accuracy</small></button>
@@ -184,6 +185,38 @@
       <div id="trainer-mastery" class="mastery"></div>
     </div>
     <div id="trainer-summary" class="panel hidden"></div>
+  </section>
+
+  <section id="screen-story" class="screen hidden">
+    <div id="story-list"></div>
+    <div id="story-stage" class="panel config-panel hidden"></div>
+    <div id="story-run" class="hidden">
+      <div class="drill-progress"><div id="story-progress-bar"></div></div>
+      <div id="story-count-banner" class="count-banner hidden"></div>
+      <div class="trainer-stage">
+        <div class="area-label">Dealer shows</div>
+        <div id="story-dealer" class="cards-row center"></div>
+        <div class="area-label" style="margin-top:10px">Your hand <span id="story-hand-total" class="total-badge"></span></div>
+        <div id="story-player" class="cards-row center"></div>
+        <div id="story-quiz" class="hidden"></div>
+        <div id="story-verdict"></div>
+        <div id="story-why" class="trainer-why"></div>
+      </div>
+      <div class="control-bar">
+        <div id="story-actions" class="controls-group">
+          <button class="btn action" data-action="H">Hit <kbd>H</kbd></button>
+          <button class="btn action" data-action="S">Stand <kbd>S</kbd></button>
+          <button class="btn action" data-action="D">Double <kbd>D</kbd></button>
+          <button class="btn action" data-action="P">Split <kbd>P</kbd></button>
+          <button class="btn action" data-action="R">Surrender <kbd>R</kbd></button>
+        </div>
+        <div class="controls-group">
+          <button class="btn primary" id="story-next" style="display:none">Next <kbd>⏎</kbd></button>
+          <button class="btn small" id="story-quit">End session</button>
+        </div>
+      </div>
+    </div>
+    <div id="story-summary" class="panel hidden"></div>
   </section>
 
   <section id="screen-lessons" class="screen hidden">

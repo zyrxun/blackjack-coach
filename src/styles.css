@@ -727,3 +727,19 @@ body[data-cardart="anime"] .card.face-card .pip { opacity: 0.3; }
 .cc.D { background: #274a72; color: #cfe6ff; }
 .cc.P { background: #4b2a66; color: #e6d1ff; }
 .cc.R { background: #6d1f24; color: #ffd3d3; }
+
+/* ---- story mode ---- */
+.story-path { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; max-width: 980px; margin: 12px auto; }
+.stage-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 10px; border-radius: 14px; border: 1px solid var(--panel-edge); background: var(--panel); cursor: pointer; text-align: center; }
+.stage-card:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-2px); }
+.stage-card.locked { opacity: 0.45; cursor: default; filter: grayscale(0.6); }
+.stage-icon { font-size: 1.9em; }
+.stage-name { font-weight: 800; }
+.stage-blurb { font-size: 0.78em; color: var(--muted); min-height: 2.2em; }
+.stars { color: var(--gold); letter-spacing: 2px; min-height: 1em; }
+.tip-line { margin: 6px 0; padding-left: 4px; color: var(--ink, inherit); }
+.count-banner { text-align: center; font-weight: 800; font-size: 1.1em; color: var(--gold); margin: 4px 0; }
+.quiz-question { text-align: center; font-size: 1.25em; font-weight: 800; margin: 14px 0 10px; }
+.quiz-choices { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin: 8px 0 14px; }
+.quiz-choices .btn.action { min-width: 64px; font-size: 1.05em; }
+.card.dim { opacity: 0.55; }

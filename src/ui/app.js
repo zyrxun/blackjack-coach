@@ -3,6 +3,7 @@ import { initPlay, enterRuns } from './play.js';
 import { initDrill, drillIsActive } from './drill.js';
 import { initLessons, enterLessons } from './lessons.js';
 import { initTrainer, trainerIsActive } from './trainer.js';
+import { initStory, storyIsActive, enterStory } from './story.js';
 import { load, save, resetAll } from './store.js';
 import { setSoundEnabled } from './sound.js';
 import { el, fmtMoney } from './cards.js';
@@ -22,11 +23,15 @@ function show(screen) {
   if (screen !== 'trainer' && trainerIsActive()) {
     document.getElementById('trainer-quit').click(); // leaving mid-session: stop, keep mastery
   }
+  if (screen !== 'story' && storyIsActive()) {
+    document.getElementById('story-quit').click(); // leaving mid-stage: stop
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   document.getElementById('screen-' + screen).classList.remove('hidden');
   const inPlay = screen === 'play';
   document.getElementById('hdr-bankroll').classList.toggle('hidden', !inPlay);
   document.getElementById('hdr-count').classList.toggle('hidden', !inPlay);
+  if (screen === 'story') enterStory();
   if (screen === 'runs') enterRuns();
   if (screen === 'lessons') enterLessons();
   if (screen === 'stats') renderStats();
@@ -41,6 +46,7 @@ initPlay(state, show);
 initDrill(state, show);
 initLessons(state, show);
 initTrainer(state);
+initStory(state);
 
 // ---- settings ----
 function loadSettingsForm() {

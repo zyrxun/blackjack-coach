@@ -259,8 +259,8 @@ function prettyKey(k) {
   return `${kind} ${total} v ${upTxt}`;
 }
 
-// ---------- the coaching "why" ----------
-function whyText(s, act) {
+// ---------- the coaching "why" (shared with Story Mode) ----------
+export function whyText(s, act) {
   const up = upValue(s.dealerUp);
   const { total, soft } = handValue(s.cards);
   const upTxt = up === 11 ? 'A' : up;

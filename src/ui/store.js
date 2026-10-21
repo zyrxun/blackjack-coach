@@ -13,6 +13,7 @@ export const DEFAULTS = {
     play: { rounds: 0, hands: 0, wagered: 0, net: 0, countGrades: [] },
     lessons: {},           // {id: true}
     strategy: {},          // perfect-strategy trainer: {key: {seen, right}}
+    story: {},             // story mode: {stageId: stars 1-3}
   },
   runs: {},                // per-profile saved runs
 };
@@ -27,6 +28,8 @@ export function load() {
         ...(raw.stats || {}),
         play: { ...DEFAULTS.stats.play, ...((raw.stats || {}).play || {}) },
         lessons: (raw.stats || {}).lessons || {},
+        strategy: (raw.stats || {}).strategy || {},
+        story: (raw.stats || {}).story || {},
       },
       runs: raw.runs || {},
     };

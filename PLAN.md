@@ -8,6 +8,12 @@ Created: 2026-10-19. Status: COMPLETE (Hi-Lo only, per user decision).
 2026-10-20: Perfect Strategy trainer added (basic-strategy drills, mastery
 tracking, trouble-spot review, engine-rendered chart) — no counting, user
 request.
+2026-10-20: Story Mode added — 13-stage learning path (tips → focused
+challenges → stars → unlocks): basic strategy arc, then counting (tags, true
+count, bet spread, I18 deviations with scripted true counts). Curriculum in
+src/engine/curriculum.js (pure, tested); UI in src/ui/story.js; progress in
+stats.story {stageId: stars}. Known simplification: challenges are decision
+drills, not full table rounds (splits/doubles graded per-hand, no shoe).
 
 ## Gamification phase (added later same day, COMPLETE)
 

@@ -24,10 +24,10 @@ your browser's localStorage.
 
     npm test          # or: node --test tests/
 
-44 tests cover the engine: hand math, shoe/penetration, Hi-Lo counting,
+51 tests cover the engine: hand math, shoe/penetration, Hi-Lo counting,
 full table rules (peek, insurance, splits, DAS, surrender, S17/H17,
-payouts), basic strategy charts, the Illustrious 18 indices, and the
-strategy-trainer scenario generator.
+payouts), basic strategy charts, the Illustrious 18 indices, the
+strategy-trainer scenario generator, and the Story Mode curriculum.
 
 ## What's inside
 
@@ -46,6 +46,12 @@ strategy-trainer scenario generator.
   loss shake, blackjack slam-in banner, synthesized sounds (mute via 🔊),
   live Hi-Lo running + true count, bet-spread advice, shuffle-time count
   quizzes. All motion respects `prefers-reduced-motion`.
+- **Story Mode** — a 13-stage learning path from your first hard 12 to
+  betting a rich shoe: teach-first tips ("10,10 is a stand"), focused
+  challenges, 1–3 stars per stage, next stage unlocks at 75%. Basic-strategy
+  arc (hard/soft/pairs/doubling/surrender/full chart) then counting: Hi-Lo
+  tags, true count, bet spreading, and Illustrious-18 deviations with a live
+  true count.
 - **Perfect Strategy** — basic-strategy trainer with **no counting**: random
   hands graded against the exact chart, a coaching "why" after every answer,
   per-hand mastery stats, a "my trouble spots" focus mode, and a full
