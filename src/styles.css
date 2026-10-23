@@ -563,6 +563,19 @@ table.stats th { color: var(--muted); font-weight: 600; }
   100% { transform: scale(1); }
 }
 
+/* ---- custom deck art (rank image per face + one back) ---- */
+.face-art {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; border-radius: inherit; display: none;
+}
+body[data-cardart="custom"] .face-art { display: block; }
+body[data-cardart="custom"] .card .pip { display: none; }
+body[data-cardart="custom"] .card .corner {
+  background: rgba(255, 255, 255, 0.82); border-radius: 5px;
+  padding: 2px 4px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+}
+body[data-cardart="custom"] .card .tag-badge { z-index: 3; }
+
 /* card faces get a soft sheen for depth */
 .card .face.front {
   background: radial-gradient(ellipse at 28% 18%, rgba(255,255,255,0.75), rgba(255,255,255,0) 55%), var(--card-bg);

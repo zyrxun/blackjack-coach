@@ -256,7 +256,7 @@ function renderStats() {
 }
 
 // ---- secret card-art picker (invisible corner button, top right) ----
-document.body.dataset.cardart = state.settings.cardArt || 'classic';
+document.body.dataset.cardart = state.settings.cardArt || 'custom';
 const artMenu = document.getElementById('art-menu');
 function syncArtMenu() {
   artMenu.querySelectorAll('[data-art]').forEach(b =>
