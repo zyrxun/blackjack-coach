@@ -592,14 +592,15 @@ body[data-cardart="anime"] .card.black.face-card .face.front {
 }
 body[data-cardart="anime"] .card.face-card .pip { opacity: 0.3; }
 
-/* card-art picker: small corner control, fixed so it's on every screen */
+/* card-art picker: invisible secret control, fixed so it's on every screen — hover its corner spot to reveal */
 #art-secret-wrap { position: fixed; top: 8px; right: 12px; z-index: 40; display: flex; }
 #art-secret {
   width: 34px; height: 34px; border-radius: 50%;
   background: var(--panel); border: 1px solid var(--gold);
-  cursor: pointer; opacity: 0.55; transition: opacity 0.15s;
+  cursor: pointer; opacity: 0; transition: opacity 0.15s;
   font-size: 15px; line-height: 1; padding: 0;
 }
+#art-secret-wrap:hover #art-secret,
 #art-secret:hover, #art-secret:focus-visible { opacity: 1; }
 #art-menu {
   position: absolute; right: 0; top: calc(100% + 10px); z-index: 60;
