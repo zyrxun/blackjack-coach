@@ -600,8 +600,6 @@ body[data-cardart="anime"] .card.face-card .pip { opacity: 0.3; }
   cursor: pointer; opacity: 0; transition: opacity 0.15s;
   font-size: 15px; line-height: 1; padding: 0;
 }
-#art-secret-wrap:hover #art-secret,
-#art-secret:hover, #art-secret:focus-visible { opacity: 1; }
 #art-menu {
   position: absolute; right: 0; top: calc(100% + 10px); z-index: 60;
   background: var(--panel); border: 1px solid var(--gold); border-radius: 12px;
